@@ -144,3 +144,18 @@ describe('app getInitialState', () => {
     expect(user).toEqual({ name: 'Fetched User', access: 'user' });
   });
 });
+
+describe('app layout', () => {
+  it('does not expose the OpenAPI shortcut link', async () => {
+    vi.resetModules();
+    vi.stubEnv('NODE_ENV', 'development');
+
+    const { layout } = await import('./app');
+    const config = layout({
+      initialState: { settings: {} },
+      setInitialState: vi.fn(),
+    } as any);
+
+    expect(config.links).toEqual([]);
+  });
+});
