@@ -2,6 +2,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   CaretRightOutlined,
+  FolderOutlined,
   PlusOutlined,
   PoweroffOutlined,
   ReloadOutlined,
@@ -26,6 +27,7 @@ import {
   Typography,
   message,
 } from 'antd';
+import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import {
   AgentPayload,
@@ -56,6 +58,16 @@ const tooltipListStyle = {
   overflow: 'auto',
 };
 const tooltipItemStyle = { whiteSpace: 'nowrap' };
+const normalizeStringList = (value?: string[]) =>
+  Array.from(new Set((value ?? []).map((item) => item.trim()).filter(Boolean)));
+const modalBodyStyle: CSSProperties = { maxHeight: '70vh', overflowY: 'auto', paddingRight: 4 };
+const modalSectionStyle: CSSProperties = {
+  background: '#fafafa',
+  border: '1px solid #f0f0f0',
+  borderRadius: 8,
+  padding: 16,
+};
+const modalSectionTitleStyle: CSSProperties = { marginBottom: 12 };
 
 const Agents = () => {
   const [agents, setAgents] = useState<AgentView[]>([]);
@@ -101,7 +113,7 @@ const Agents = () => {
       id: agent.id,
       description: agent.description,
       enabled: agent.enabled,
-      tools: agent.tools,
+      tools: normalizeStringList(agent.tools),
       systemPrompt: agent.systemPrompt,
       extraWorkspaces: agent.workspaces.slice(1),
     });
@@ -115,7 +127,7 @@ const Agents = () => {
       id: values.id,
       description: values.description ?? '',
       enabled: values.enabled,
-      tools: values.tools ?? [],
+      tools: normalizeStringList(values.tools),
       systemPrompt: values.systemPrompt ?? '',
       ...(editingAgent
         ? {
@@ -271,9 +283,9 @@ const Agents = () => {
                       </Typography.Text>
                     ) : (
                       <>
-                        {agent.tools.slice(0, visibleToolCount).map((tool) => (
+                        {agent.tools.slice(0, visibleToolCount).map((tool, index) => (
                           <Tag
-                            key={tool}
+                            key={`${tool}-${index}`}
                             style={{
                               maxWidth: 120,
                               overflow: 'hidden',
@@ -329,64 +341,105 @@ const Agents = () => {
         open={modalOpen}
         okText="保存"
         cancelText="取消"
+        centered
         confirmLoading={saving}
+        forceRender
+        width={760}
+        styles={{ body: modalBodyStyle }}
         onOk={() => void saveAgent()}
         onCancel={() => setModalOpen(false)}
         destroyOnHidden
       >
-        <Form form={form} layout="vertical" initialValues={emptyValues}>
-          <Form.Item
-            label="Agent ID"
-            name="id"
-            rules={[
-              { required: true, message: '请输入 Agent ID' },
-              {
-                pattern: /^[A-Za-z0-9_-]+$/,
-                message: '只允许字母、数字、_、-',
-              },
-            ]}
-          >
-            <Input disabled={Boolean(editingAgent)} />
-          </Form.Item>
-          <Form.Item label="描述" name="description">
-            <Input.TextArea rows={3} />
-          </Form.Item>
-          <Form.Item label="启用" name="enabled" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-          <Form.Item label="工具" name="tools">
-            <Select mode="tags" placeholder="输入工具名称后回车" />
-          </Form.Item>
-          {editingAgent && (
-            <>
-              <Form.Item label="默认工作目录">
-                <Input aria-label="默认工作目录" value={defaultWorkspace} disabled />
+        <Form form={form} layout="vertical" initialValues={emptyValues} requiredMark={false}>
+          <Space orientation="vertical" size={16} style={{ width: '100%' }}>
+            <div style={modalSectionStyle}>
+              <Typography.Text strong style={modalSectionTitleStyle}>
+                基础信息
+              </Typography.Text>
+              <Row gutter={16}>
+                <Col xs={24} md={16}>
+                  <Form.Item
+                    label="Agent ID"
+                    name="id"
+                    rules={[
+                      { required: true, message: '请输入 Agent ID' },
+                      {
+                        pattern: /^[A-Za-z0-9_-]+$/,
+                        message: '只允许字母、数字、_、-',
+                      },
+                    ]}
+                  >
+                    <Input disabled={Boolean(editingAgent)} />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item label="启用" name="enabled" valuePropName="checked">
+                    <Switch checkedChildren="启用" unCheckedChildren="停用" />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Form.Item label="描述" name="description">
+                <Input.TextArea rows={3} />
               </Form.Item>
-              <Form.List name="extraWorkspaces">
-                {(fields, { add, remove }) => (
-                  <Space orientation="vertical" style={{ width: '100%' }}>
-                    {fields.map((field) => (
-                      <Space key={field.key} align="baseline" style={{ width: '100%' }}>
-                        <Form.Item
-                          {...field}
-                          label={field.name === 0 ? '其他工作目录' : undefined}
-                          rules={[{ required: true, message: '请输入工作目录' }]}
-                          style={{ flex: 1 }}
+              <Form.Item
+                label="工具"
+                name="tools"
+                normalize={normalizeStringList}
+                style={{ marginBottom: 0 }}
+              >
+                <Select mode="tags" placeholder="输入工具名称后回车" />
+              </Form.Item>
+            </div>
+
+            {editingAgent && (
+              <div style={modalSectionStyle}>
+                <Space style={modalSectionTitleStyle}>
+                  <FolderOutlined />
+                  <Typography.Text strong>工作目录</Typography.Text>
+                </Space>
+                <Form.Item label="默认工作目录">
+                  <Input aria-label="默认工作目录" value={defaultWorkspace} disabled />
+                </Form.Item>
+                <Form.List name="extraWorkspaces">
+                  {(fields, { add, remove }) => (
+                    <Space orientation="vertical" style={{ width: '100%' }}>
+                      {fields.length > 0 && (
+                        <Typography.Text>其他工作目录</Typography.Text>
+                      )}
+                      {fields.map(({ key, ...field }) => (
+                        <div
+                          key={key}
+                          style={{ alignItems: 'flex-start', display: 'flex', gap: 8, width: '100%' }}
                         >
-                          <Input placeholder="例如 /Users/me/project" />
-                        </Form.Item>
-                        <Button onClick={() => remove(field.name)}>删除</Button>
-                      </Space>
-                    ))}
-                    <Button onClick={() => add()}>添加工作目录</Button>
-                  </Space>
-                )}
-              </Form.List>
-            </>
-          )}
-          <Form.Item label="CRAZY.md" name="systemPrompt">
-            <Input.TextArea rows={8} placeholder="输入 Agent 的 system prompt" />
-          </Form.Item>
+                          <Form.Item
+                            {...field}
+                            rules={[{ required: true, message: '请输入工作目录' }]}
+                            style={{ flex: 1, marginBottom: 0 }}
+                          >
+                            <Input placeholder="例如 /Users/me/project" />
+                          </Form.Item>
+                          <Button
+                            aria-label="删除工作目录"
+                            icon={<DeleteOutlined />}
+                            onClick={() => remove(field.name)}
+                          />
+                        </div>
+                      ))}
+                      <Button icon={<PlusOutlined />} onClick={() => add()}>
+                        添加工作目录
+                      </Button>
+                    </Space>
+                  )}
+                </Form.List>
+              </div>
+            )}
+
+            <div style={modalSectionStyle}>
+              <Form.Item label="CRAZY.md" name="systemPrompt" style={{ marginBottom: 0 }}>
+                <Input.TextArea rows={10} placeholder="输入 Agent 的 system prompt" />
+              </Form.Item>
+            </div>
+          </Space>
         </Form>
       </Modal>
     </PageContainer>

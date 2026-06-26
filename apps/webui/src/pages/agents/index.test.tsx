@@ -134,6 +134,25 @@ describe('Agents page', () => {
     });
   });
 
+  it('deduplicates tools before saving', async () => {
+    vi.mocked(service.listAgents).mockResolvedValue({
+      code: 0,
+      data: [{ ...coder, tools: ['test', 'test', 'shell'] }],
+      message: 'Agents loaded',
+    });
+
+    render(<Agents />);
+    fireEvent.click(await screen.findByRole('button', { name: '编辑 Agent' }));
+    fireEvent.click(screen.getByRole('button', { name: /保\s*存/ }));
+
+    await waitFor(() => {
+      expect(service.updateAgent).toHaveBeenCalledWith(
+        'coder',
+        expect.objectContaining({ tools: ['test', 'shell'] }),
+      );
+    });
+  });
+
   it('shows API error message', async () => {
     vi.mocked(service.listAgents).mockResolvedValue({
       code: 1005,
