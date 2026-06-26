@@ -1,7 +1,9 @@
 import {
   DeleteOutlined,
   EditOutlined,
+  CaretRightOutlined,
   PlusOutlined,
+  PoweroffOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
@@ -20,6 +22,7 @@ import {
   Space,
   Switch,
   Tag,
+  Tooltip,
   Typography,
   message,
 } from 'antd';
@@ -46,10 +49,19 @@ const emptyValues: FormValues = {
   extraWorkspaces: [],
 };
 
+const visibleToolCount = 3;
+const tooltipListStyle = {
+  maxHeight: 160,
+  maxWidth: 360,
+  overflow: 'auto',
+};
+const tooltipItemStyle = { whiteSpace: 'nowrap' };
+
 const Agents = () => {
   const [agents, setAgents] = useState<AgentView[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState('');
   const [error, setError] = useState('');
   const [editingAgent, setEditingAgent] = useState<AgentView | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -137,6 +149,21 @@ const Agents = () => {
     await loadAgents();
   };
 
+  const toggleAgent = async (agent: AgentView) => {
+    setActionLoadingId(agent.id);
+    const response = await updateAgent(agent.id, {
+      ...agent,
+      enabled: !agent.enabled,
+    });
+    setActionLoadingId('');
+    if (response.code !== 0) {
+      messageApi.error(response.message);
+      return;
+    }
+    messageApi.success(response.message);
+    await loadAgents();
+  };
+
   const content = useMemo(() => {
     if (!loading && agents.length === 0) {
       return <Empty description="暂无 Agents" />;
@@ -145,8 +172,9 @@ const Agents = () => {
     return (
       <Row gutter={[16, 16]}>
         {agents.map((agent) => (
-          <Col key={agent.id} xs={24} md={12} xl={8}>
+          <Col key={agent.id} xs={24} md={12} xl={8} style={{ display: 'flex' }}>
             <Card
+              style={{ width: '100%' }}
               title={
                 <Space>
                   <span>{agent.id}</span>
@@ -157,13 +185,23 @@ const Agents = () => {
               }
               extra={
                 <Space>
-                  <Button
-                    icon={<EditOutlined />}
-                    size="small"
-                    onClick={() => openEdit(agent)}
-                  >
-                    编辑
-                  </Button>
+                  <Tooltip title={agent.enabled ? '禁用 Agent' : '启用 Agent'}>
+                    <Button
+                      aria-label={agent.enabled ? '禁用 Agent' : '启用 Agent'}
+                      icon={agent.enabled ? <PoweroffOutlined /> : <CaretRightOutlined />}
+                      loading={actionLoadingId === agent.id}
+                      size="small"
+                      onClick={() => void toggleAgent(agent)}
+                    />
+                  </Tooltip>
+                  <Tooltip title="编辑 Agent">
+                    <Button
+                      aria-label="编辑 Agent"
+                      icon={<EditOutlined />}
+                      size="small"
+                      onClick={() => openEdit(agent)}
+                    />
+                  </Tooltip>
                   <Popconfirm
                     title="删除 Agent"
                     description="只删除配置，不删除工作目录文件。"
@@ -171,9 +209,14 @@ const Agents = () => {
                     cancelText="取消"
                     onConfirm={() => void removeAgent(agent.id)}
                   >
-                    <Button danger icon={<DeleteOutlined />} size="small">
-                      删除
-                    </Button>
+                    <Tooltip title="删除 Agent">
+                      <Button
+                        aria-label="删除 Agent"
+                        danger
+                        icon={<DeleteOutlined />}
+                        size="small"
+                      />
+                    </Tooltip>
                   </Popconfirm>
                 </Space>
               }
@@ -183,24 +226,89 @@ const Agents = () => {
                   {agent.description || '无描述'}
                 </Typography.Paragraph>
                 <div>
-                  <Typography.Text type="secondary">默认工作目录</Typography.Text>
-                  <Typography.Paragraph copyable ellipsis={{ rows: 2 }}>
-                    {agent.workspaces[0]}
-                  </Typography.Paragraph>
+                  <Space>
+                    <Typography.Text type="secondary">工作目录</Typography.Text>
+                    <Tag>共 {agent.workspaces.length} 个</Tag>
+                  </Space>
+                  <Space align="start" style={{ marginTop: 4, width: '100%' }}>
+                    <Tag color="blue">默认</Tag>
+                    <Typography.Paragraph
+                      copyable
+                      ellipsis={{ rows: 1 }}
+                      style={{ flex: 1, marginBottom: 0 }}
+                    >
+                      {agent.workspaces[0]}
+                    </Typography.Paragraph>
+                  </Space>
+                  {agent.workspaces.length > 1 ? (
+                    <Tooltip title={agent.workspaces.slice(1).join(', ')}>
+                      <Typography.Text disabled style={{ fontSize: 13 }}>
+                        +{agent.workspaces.length - 1} 个其他目录
+                      </Typography.Text>
+                    </Tooltip>
+                  ) : (
+                    <div style={{ height: 22 }} />
+                  )}
                 </div>
-                <Space wrap>
-                  <Tag>{agent.workspaces.length} 个工作目录</Tag>
-                  {agent.tools.map((tool) => (
-                    <Tag key={tool}>{tool}</Tag>
-                  ))}
-                </Space>
+                <div>
+                  <Typography.Text type="secondary">工具列表</Typography.Text>
+                  <div
+                    style={{
+                      alignItems: 'center',
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 8,
+                      minHeight: 32,
+                    }}
+                  >
+                    {agent.tools.length === 0 ? (
+                      <Typography.Text
+                        disabled
+                        italic
+                        style={{ fontSize: 13 }}
+                      >
+                        未配置工具
+                      </Typography.Text>
+                    ) : (
+                      <>
+                        {agent.tools.slice(0, visibleToolCount).map((tool) => (
+                          <Tag
+                            key={tool}
+                            style={{
+                              maxWidth: 120,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {tool}
+                          </Tag>
+                        ))}
+                        {agent.tools.length > visibleToolCount && (
+                          <Tooltip
+                            title={
+                              <div style={tooltipListStyle}>
+                                {agent.tools.slice(visibleToolCount).map((tool, index) => (
+                                  <div key={`${tool}-${index}`} style={tooltipItemStyle}>
+                                    {tool}
+                                  </div>
+                                ))}
+                              </div>
+                            }
+                          >
+                            <Tag>+{agent.tools.length - visibleToolCount}</Tag>
+                          </Tooltip>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
               </Space>
             </Card>
           </Col>
         ))}
       </Row>
     );
-  }, [agents, loading]);
+  }, [actionLoadingId, agents, loading]);
 
   return (
     <PageContainer

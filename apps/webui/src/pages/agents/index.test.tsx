@@ -94,7 +94,7 @@ describe('Agents page', () => {
 
   it('edits an agent with readonly id and default workspace', async () => {
     render(<Agents />);
-    fireEvent.click(await screen.findByRole('button', { name: /编辑/ }));
+    fireEvent.click(await screen.findByRole('button', { name: '编辑 Agent' }));
 
     expect(screen.getByLabelText('Agent ID')).toBeDisabled();
     expect(screen.getByLabelText('默认工作目录')).toBeDisabled();
@@ -114,11 +114,23 @@ describe('Agents page', () => {
 
   it('deletes after confirmation', async () => {
     render(<Agents />);
-    fireEvent.click(await screen.findByRole('button', { name: /删除/ }));
+    fireEvent.click(await screen.findByRole('button', { name: '删除 Agent' }));
     fireEvent.click(await screen.findByRole('button', { name: /确\s*认/ }));
 
     await waitFor(() => {
       expect(service.deleteAgent).toHaveBeenCalledWith('coder');
+    });
+  });
+
+  it('toggles enabled state from the card', async () => {
+    render(<Agents />);
+    fireEvent.click(await screen.findByRole('button', { name: '禁用 Agent' }));
+
+    await waitFor(() => {
+      expect(service.updateAgent).toHaveBeenCalledWith(
+        'coder',
+        expect.objectContaining({ id: 'coder', enabled: false }),
+      );
     });
   });
 
