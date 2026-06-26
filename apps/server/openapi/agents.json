@@ -1,0 +1,541 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "CrazyClaw Server Agents API",
+    "version": "0.1.0",
+    "description": "Agents configuration management APIs for CrazyClaw. Business status is returned in the response body `code` field."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Agents",
+      "description": "Manage agent configuration stored in ~/.crazyclaw/crazyclaw.json and CRAZY.md files."
+    }
+  ],
+  "paths": {
+    "/api/agents": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "List agents",
+        "operationId": "listAgents",
+        "x-apifox-folder": "Agents",
+        "responses": {
+          "200": {
+            "description": "Agents loaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAgentList"
+                },
+                "example": {
+                  "code": 0,
+                  "data": [
+                    {
+                      "id": "coder",
+                      "description": "Coding assistant",
+                      "enabled": true,
+                      "workspaces": ["/Users/me/.crazyclaw/coder"],
+                      "tools": ["shell", "filesystem"],
+                      "systemPrompt": "You are a coding agent."
+                    }
+                  ],
+                  "message": "Agents loaded"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Agents"],
+        "summary": "Create agent",
+        "operationId": "createAgent",
+        "x-apifox-folder": "Agents",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAgentRequest"
+              },
+              "example": {
+                "id": "coder",
+                "description": "Coding assistant",
+                "enabled": true,
+                "tools": ["shell", "filesystem"],
+                "systemPrompt": "You are a coding agent."
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Agent created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAgent"
+                },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "id": "coder",
+                    "description": "Coding assistant",
+                    "enabled": true,
+                    "workspaces": ["/Users/me/.crazyclaw/coder"],
+                    "tools": ["shell", "filesystem"],
+                    "systemPrompt": "You are a coding agent."
+                  },
+                  "message": "Agent created"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Business error response, such as duplicate id or invalid payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseNullableAgent"
+                },
+                "examples": {
+                  "duplicate": {
+                    "value": {
+                      "code": 1002,
+                      "data": null,
+                      "message": "Agent already exists"
+                    }
+                  },
+                  "badRequest": {
+                    "value": {
+                      "code": 1003,
+                      "data": null,
+                      "message": "Invalid agent payload"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/{id}": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "Get agent",
+        "operationId": "getAgent",
+        "x-apifox-folder": "Agents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseNullableAgent"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "code": 0,
+                      "data": {
+                        "id": "coder",
+                        "description": "Coding assistant",
+                        "enabled": true,
+                        "workspaces": ["/Users/me/.crazyclaw/coder"],
+                        "tools": ["shell", "filesystem"],
+                        "systemPrompt": "You are a coding agent."
+                      },
+                      "message": "Agent loaded"
+                    }
+                  },
+                  "notFound": {
+                    "value": {
+                      "code": 1001,
+                      "data": null,
+                      "message": "Agent not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Agents"],
+        "summary": "Update agent",
+        "operationId": "updateAgent",
+        "x-apifox-folder": "Agents",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAgentRequest"
+              },
+              "example": {
+                "id": "coder",
+                "description": "Updated coding assistant",
+                "enabled": true,
+                "workspaces": [
+                  "/Users/me/.crazyclaw/coder",
+                  "/Users/me/project"
+                ],
+                "tools": ["shell", "filesystem", "git"],
+                "systemPrompt": "You are a coding agent focused on small, safe diffs."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agent update response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseNullableAgent"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "code": 0,
+                      "data": {
+                        "id": "coder",
+                        "description": "Updated coding assistant",
+                        "enabled": true,
+                        "workspaces": [
+                          "/Users/me/.crazyclaw/coder",
+                          "/Users/me/project"
+                        ],
+                        "tools": ["shell", "filesystem", "git"],
+                        "systemPrompt": "You are a coding agent focused on small, safe diffs."
+                      },
+                      "message": "Agent updated"
+                    }
+                  },
+                  "defaultWorkspaceLocked": {
+                    "value": {
+                      "code": 1004,
+                      "data": null,
+                      "message": "Default workspace cannot be changed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Agents"],
+        "summary": "Delete agent",
+        "operationId": "deleteAgent",
+        "x-apifox-folder": "Agents",
+        "description": "Deletes only the agent record from crazyclaw.json. It does not delete workspace directories or CRAZY.md.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AgentId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent delete response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseDeleteAgent"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "code": 0,
+                      "data": {
+                        "id": "coder"
+                      },
+                      "message": "Agent deleted"
+                    }
+                  },
+                  "notFound": {
+                    "value": {
+                      "code": 1001,
+                      "data": null,
+                      "message": "Agent not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "AgentId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Agent id. Allowed characters: letters, numbers, underscore, hyphen.",
+        "schema": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "example": "coder"
+        }
+      }
+    },
+    "schemas": {
+      "AgentView": {
+        "type": "object",
+        "required": [
+          "id",
+          "description",
+          "enabled",
+          "workspaces",
+          "tools",
+          "systemPrompt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "description": "Agent id; also used as the display name.",
+            "example": "coder"
+          },
+          "description": {
+            "type": "string",
+            "example": "Coding assistant"
+          },
+          "enabled": {
+            "type": "boolean",
+            "example": true
+          },
+          "workspaces": {
+            "type": "array",
+            "description": "The first item is the protected default workspace: ~/.crazyclaw/{agentId}.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["/Users/me/.crazyclaw/coder", "/Users/me/project"]
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["shell", "filesystem"]
+          },
+          "systemPrompt": {
+            "type": "string",
+            "description": "Stored in CRAZY.md under the default workspace, not in crazyclaw.json.",
+            "example": "You are a coding agent."
+          }
+        }
+      },
+      "CreateAgentRequest": {
+        "type": "object",
+        "required": ["id", "tools"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "example": "coder"
+          },
+          "description": {
+            "type": "string",
+            "default": "",
+            "example": "Coding assistant"
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true,
+            "example": true
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["shell", "filesystem"]
+          },
+          "systemPrompt": {
+            "type": "string",
+            "default": "",
+            "example": "You are a coding agent."
+          }
+        }
+      },
+      "UpdateAgentRequest": {
+        "type": "object",
+        "required": [
+          "id",
+          "enabled",
+          "workspaces",
+          "tools",
+          "systemPrompt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "description": "Must match the path parameter.",
+            "example": "coder"
+          },
+          "description": {
+            "type": "string",
+            "default": "",
+            "example": "Updated coding assistant"
+          },
+          "enabled": {
+            "type": "boolean",
+            "example": true
+          },
+          "workspaces": {
+            "type": "array",
+            "minItems": 1,
+            "description": "First item must be the existing default workspace.",
+            "items": {
+              "type": "string"
+            },
+            "example": ["/Users/me/.crazyclaw/coder", "/Users/me/project"]
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["shell", "filesystem", "git"]
+          },
+          "systemPrompt": {
+            "type": "string",
+            "example": "You are a coding agent focused on small, safe diffs."
+          }
+        }
+      },
+      "ApiResponseBase": {
+        "type": "object",
+        "required": ["code", "data", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Business status code. 0 means success.",
+            "enum": [0, 1001, 1002, 1003, 1004, 1005]
+          },
+          "data": {
+            "$ref": "#/components/schemas/AgentView"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiResponseAgent": {
+        "type": "object",
+        "required": ["code", "data", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Business status code. 0 means success.",
+            "enum": [0, 1001, 1002, 1003, 1004, 1005],
+            "example": 0
+          },
+          "data": {
+            "$ref": "#/components/schemas/AgentView"
+          },
+          "message": {
+            "type": "string",
+            "example": "Agent created"
+          }
+        }
+      },
+      "ApiResponseNullableAgent": {
+        "type": "object",
+        "required": ["code", "data", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Business status code. 0 means success.",
+            "enum": [0, 1001, 1002, 1003, 1004, 1005],
+            "example": 0
+          },
+          "data": {
+            "nullable": true,
+            "$ref": "#/components/schemas/AgentView"
+          },
+          "message": {
+            "type": "string",
+            "example": "Agent loaded"
+          }
+        }
+      },
+      "ApiResponseAgentList": {
+        "type": "object",
+        "required": ["code", "data", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Business status code. 0 means success.",
+            "enum": [0, 1005],
+            "example": 0
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentView"
+            }
+          },
+          "message": {
+            "type": "string",
+            "example": "Agents loaded"
+          }
+        }
+      },
+      "DeleteAgentData": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "coder"
+          }
+        }
+      },
+      "ApiResponseDeleteAgent": {
+        "type": "object",
+        "required": ["code", "data", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Business status code. 0 means success.",
+            "enum": [0, 1001, 1003, 1005],
+            "example": 0
+          },
+          "data": {
+            "nullable": true,
+            "$ref": "#/components/schemas/DeleteAgentData"
+          },
+          "message": {
+            "type": "string",
+            "example": "Agent deleted"
+          }
+        }
+      }
+    }
+  }
+}
