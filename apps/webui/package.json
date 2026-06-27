@@ -1,5 +1,5 @@
 {
-  "name": "webui",
+  "name": "@carzyclaw/webui",
   "version": "6.0.2",
   "private": true,
   "description": "An out-of-box UI solution for enterprise applications",

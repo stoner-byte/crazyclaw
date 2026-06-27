@@ -30,7 +30,7 @@ import {
   message,
 } from 'antd';
 import type { CSSProperties } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   createModel,
   deleteModel,
@@ -98,6 +98,7 @@ const Models = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState('');
+  const activeTestIdRef = useRef('');
   const [error, setError] = useState('');
   const [editingModel, setEditingModel] = useState<ModelView | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -192,9 +193,14 @@ const Models = () => {
   };
 
   const runTest = async (model: ModelView, mode: 'text' | 'image') => {
-    setActionLoadingId(`${model.id}:${mode}`);
-    const response = await testModel(model.id, { mode });
-    setActionLoadingId('');
+    if (activeTestIdRef.current) return;
+    const testId = `${model.id}:${mode}`;
+    activeTestIdRef.current = testId;
+    setActionLoadingId(testId);
+    const response = await testModel(model.id, { mode }).finally(() => {
+      activeTestIdRef.current = '';
+      setActionLoadingId('');
+    });
     if (response.code !== 0) {
       messageApi.error(response.message);
       return;
@@ -206,6 +212,9 @@ const Models = () => {
     if (!loading && models.length === 0) {
       return <Empty description="暂无 Models" />;
     }
+
+    const isTestLoading =
+      actionLoadingId.endsWith(':text') || actionLoadingId.endsWith(':image');
 
     return (
       <Row gutter={[16, 16]}>
@@ -235,7 +244,7 @@ const Models = () => {
                   <Tooltip title="测试文本">
                     <Button
                       aria-label="测试文本"
-                      disabled={!model.input.includes('text')}
+                      disabled={!model.input.includes('text') || isTestLoading}
                       icon={<CheckCircleOutlined />}
                       loading={actionLoadingId === `${model.id}:text`}
                       size="small"
@@ -251,7 +260,7 @@ const Models = () => {
                   >
                     <Button
                       aria-label="测试多模态"
-                      disabled={!model.input.includes('image')}
+                      disabled={!model.input.includes('image') || isTestLoading}
                       icon={<EyeOutlined />}
                       loading={actionLoadingId === `${model.id}:image`}
                       size="small"

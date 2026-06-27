@@ -143,12 +143,50 @@ describe('Models page', () => {
   });
 
   it('tests text and image modes from the card', async () => {
+    const testResponse = {
+      code: 0,
+      data: {
+        id: 'gpt',
+        provider: 'openai' as const,
+        mode: 'text' as const,
+        ok: true,
+        durationMs: 12,
+        message: 'Model test passed',
+      },
+      message: 'Model test passed',
+    };
+    let resolveTextTest: (value: typeof testResponse) => void = () => {};
+    vi.mocked(service.testModel)
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveTextTest = resolve;
+          }),
+      )
+      .mockResolvedValueOnce({
+        ...testResponse,
+        data: { ...testResponse.data, mode: 'image' },
+      });
+
     render(<Models />);
-    fireEvent.click(await screen.findByRole('button', { name: '测试文本' }));
-    fireEvent.click(await screen.findByRole('button', { name: '测试多模态' }));
+    const textButton = await screen.findByRole('button', { name: '测试文本' });
+    const imageButton = await screen.findByRole('button', { name: '测试多模态' });
+
+    fireEvent.click(textButton);
 
     await waitFor(() => {
       expect(service.testModel).toHaveBeenCalledWith('gpt', { mode: 'text' });
+    });
+    await waitFor(() => expect(imageButton).toBeDisabled());
+
+    fireEvent.click(imageButton);
+    expect(service.testModel).toHaveBeenCalledTimes(1);
+
+    resolveTextTest(testResponse);
+    await waitFor(() => expect(imageButton).not.toBeDisabled());
+
+    fireEvent.click(imageButton);
+    await waitFor(() => {
       expect(service.testModel).toHaveBeenCalledWith('gpt', { mode: 'image' });
     });
   });
