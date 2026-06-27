@@ -1,28 +1,22 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { ApiResponse } from '../types/api';
+import { apiBadRequest, apiFail, apiOk } from '../api/response';
+import type { ApiResponse } from '../api/types';
+import { ConfigFileService } from '../config/config-file.service';
 import {
   AGENT_CODES,
   AgentConfig,
   AgentPayload,
   AgentView,
-  CrazyclawConfig,
 } from './agents.types';
 
-export const CRAZYCLAW_ROOT = Symbol('CRAZYCLAW_ROOT');
-
-const CONFIG_FILE = 'crazyclaw.json';
 const PROMPT_FILE = 'CRAZY.md';
 const VALID_ID = /^[A-Za-z0-9_-]+$/;
 
 @Injectable()
 export class AgentsService {
-  constructor(
-    @Inject(CRAZYCLAW_ROOT)
-    private readonly rootDir: string = join(homedir(), '.crazyclaw'),
-  ) {}
+  constructor(private readonly configFile: ConfigFileService = new ConfigFileService()) {}
 
   async findAll(): Promise<ApiResponse<AgentView[]>> {
     return this.safe(async () => {
@@ -30,28 +24,32 @@ export class AgentsService {
       const agents = await Promise.all(
         Object.values(config.agents).map((agent) => this.toView(agent)),
       );
-      return ok(agents, 'Agents loaded');
+      return apiOk(agents, 'Agents loaded');
     });
   }
 
   async findOne(id: string): Promise<ApiResponse<AgentView | null>> {
-    if (!this.isValidId(id)) return badRequest('Invalid agent id');
+    if (!this.isValidId(id)) {
+      return apiBadRequest(AGENT_CODES.BAD_REQUEST, 'Invalid agent id');
+    }
     return this.safe(async () => {
       const config = await this.readConfig();
       const agent = config.agents[id];
-      if (!agent) return fail(AGENT_CODES.NOT_FOUND, 'Agent not found');
-      return ok(await this.toView(agent), 'Agent loaded');
+      if (!agent) return apiFail(AGENT_CODES.NOT_FOUND, 'Agent not found');
+      return apiOk(await this.toView(agent), 'Agent loaded');
     });
   }
 
   async create(payload: AgentPayload): Promise<ApiResponse<AgentView | null>> {
     const normalized = this.normalizeCreate(payload);
-    if (!normalized) return badRequest('Invalid agent payload');
+    if (!normalized) {
+      return apiBadRequest(AGENT_CODES.BAD_REQUEST, 'Invalid agent payload');
+    }
 
     return this.safe(async () => {
       const config = await this.readConfig();
       if (config.agents[normalized.id]) {
-        return fail(AGENT_CODES.ALREADY_EXISTS, 'Agent already exists');
+        return apiFail(AGENT_CODES.ALREADY_EXISTS, 'Agent already exists');
       }
 
       await mkdir(this.defaultWorkspace(normalized.id), { recursive: true });
@@ -59,7 +57,7 @@ export class AgentsService {
       config.agents[normalized.id] = stripPrompt(normalized);
       await this.writeConfig(config);
 
-      return ok(await this.toView(config.agents[normalized.id]), 'Agent created');
+      return apiOk(await this.toView(config.agents[normalized.id]), 'Agent created');
     });
   }
 
@@ -68,17 +66,21 @@ export class AgentsService {
     payload: AgentPayload,
   ): Promise<ApiResponse<AgentView | null>> {
     if (!this.isValidId(id) || payload.id !== id) {
-      return badRequest('Agent id cannot be changed');
+      return apiBadRequest(AGENT_CODES.BAD_REQUEST, 'Agent id cannot be changed');
     }
 
     return this.safe(async () => {
       const config = await this.readConfig();
-      if (!config.agents[id]) return fail(AGENT_CODES.NOT_FOUND, 'Agent not found');
+      if (!config.agents[id]) {
+        return apiFail(AGENT_CODES.NOT_FOUND, 'Agent not found');
+      }
 
       const normalized = this.normalizeUpdate(id, payload);
-      if (!normalized) return badRequest('Invalid agent payload');
+      if (!normalized) {
+        return apiBadRequest(AGENT_CODES.BAD_REQUEST, 'Invalid agent payload');
+      }
       if (normalized.workspaces[0] !== this.defaultWorkspace(id)) {
-        return fail(
+        return apiFail(
           AGENT_CODES.DEFAULT_WORKSPACE_LOCKED,
           'Default workspace cannot be changed',
         );
@@ -89,18 +91,22 @@ export class AgentsService {
       config.agents[id] = stripPrompt(normalized);
       await this.writeConfig(config);
 
-      return ok(await this.toView(config.agents[id]), 'Agent updated');
+      return apiOk(await this.toView(config.agents[id]), 'Agent updated');
     });
   }
 
   async remove(id: string): Promise<ApiResponse<{ id: string } | null>> {
-    if (!this.isValidId(id)) return badRequest('Invalid agent id');
+    if (!this.isValidId(id)) {
+      return apiBadRequest(AGENT_CODES.BAD_REQUEST, 'Invalid agent id');
+    }
     return this.safe(async () => {
       const config = await this.readConfig();
-      if (!config.agents[id]) return fail(AGENT_CODES.NOT_FOUND, 'Agent not found');
+      if (!config.agents[id]) {
+        return apiFail(AGENT_CODES.NOT_FOUND, 'Agent not found');
+      }
       delete config.agents[id];
       await this.writeConfig(config);
-      return ok({ id }, 'Agent deleted');
+      return apiOk({ id }, 'Agent deleted');
     });
   }
 
@@ -138,33 +144,19 @@ export class AgentsService {
   }
 
   private defaultWorkspace(id: string): string {
-    return join(this.rootDir, id);
+    return join(this.configFile.rootDir, id);
   }
 
   private promptPath(id: string): string {
     return join(this.defaultWorkspace(id), PROMPT_FILE);
   }
 
-  private configPath(): string {
-    return join(this.rootDir, CONFIG_FILE);
+  private async readConfig() {
+    return this.configFile.readConfig();
   }
 
-  private async readConfig(): Promise<CrazyclawConfig> {
-    try {
-      const raw = await readFile(this.configPath(), 'utf8');
-      const parsed = JSON.parse(raw) as Partial<CrazyclawConfig>;
-      return {
-        agents: isRecord(parsed.agents) ? (parsed.agents as Record<string, AgentConfig>) : {},
-      };
-    } catch (error) {
-      if (isNotFound(error)) return { agents: {} };
-      throw error;
-    }
-  }
-
-  private async writeConfig(config: CrazyclawConfig): Promise<void> {
-    await mkdir(this.rootDir, { recursive: true });
-    await writeFile(this.configPath(), `${JSON.stringify(config, null, 2)}\n`);
+  private async writeConfig(config: Awaited<ReturnType<ConfigFileService['readConfig']>>): Promise<void> {
+    await this.configFile.writeConfig(config);
   }
 
   private async writePrompt(id: string, prompt: string): Promise<void> {
@@ -198,21 +190,12 @@ export class AgentsService {
     try {
       return await action();
     } catch {
-      return fail(AGENT_CODES.CONFIG_IO_ERROR, 'Config file read/write failed');
+      return apiFail(
+        AGENT_CODES.CONFIG_IO_ERROR,
+        'Config file read/write failed',
+      );
     }
   }
-}
-
-function ok<T>(data: T, message: string): ApiResponse<T> {
-  return { code: AGENT_CODES.OK, data, message };
-}
-
-function fail<T = never>(code: number, message: string): ApiResponse<T> {
-  return { code, data: null, message };
-}
-
-function badRequest<T = never>(message: string): ApiResponse<T> {
-  return fail(AGENT_CODES.BAD_REQUEST, message);
 }
 
 function normalizeStringArray(value: unknown): string[] | null {
@@ -229,10 +212,6 @@ function stripPrompt(agent: AgentView): AgentConfig {
     tools: agent.tools,
     workspaces: agent.workspaces,
   };
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function isNotFound(error: unknown): boolean {

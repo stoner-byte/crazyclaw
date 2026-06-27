@@ -19,10 +19,6 @@ export type AgentPayload = {
   systemPrompt?: string;
 };
 
-export type CrazyclawConfig = {
-  agents: Record<string, AgentConfig>;
-};
-
 export const AGENT_CODES = {
   OK: 0,
   NOT_FOUND: 1001,
