@@ -208,6 +208,17 @@ describe('ModelsService', () => {
     });
   });
 
+  it('rejects tests for inputs not configured on the model', async () => {
+    await service.create({ ...modelPayload, input: ['text'] });
+
+    await expect(service.test('gpt', { mode: 'image' })).resolves.toMatchObject({
+      code: 1106,
+      data: null,
+      message: 'Model does not support image input',
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('routes Anthropic and Ollama tests to provider-specific endpoints', async () => {
     await service.create({
       ...modelPayload,

@@ -121,6 +121,12 @@ export class ModelsService {
       const config = await this.configFile.readConfig();
       const model = findModel(config.models, id);
       if (!model) return apiFail(MODEL_CODES.NOT_FOUND, 'Model not found');
+      if (!model.input.includes(mode)) {
+        return apiFail(
+          MODEL_CODES.UNSUPPORTED_TEST_MODE,
+          `Model does not support ${mode} input`,
+        );
+      }
 
       const startedAt = Date.now();
       try {
