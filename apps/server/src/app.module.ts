@@ -10,15 +10,18 @@ import {
 } from './config/config-file.service';
 import { ModelsController } from './models/models.controller';
 import { ModelsService } from './models/models.service';
+import { ToolsController } from './tools/tools.controller';
+import { ToolsService } from './tools/tools.service';
 
 @Module({
   imports: [],
-  controllers: [AppController, AgentsController, ModelsController],
+  controllers: [AppController, AgentsController, ModelsController, ToolsController],
   providers: [
     AppService,
     ConfigFileService,
     AgentsService,
     ModelsService,
+    ToolsService,
     {
       provide: CRAZYCLAW_ROOT,
       useValue: DEFAULT_CRAZYCLAW_ROOT,

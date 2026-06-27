@@ -1,0 +1,455 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "CrazyClaw Server Tools API",
+    "version": "0.1.0",
+    "description": "Tools configuration management APIs for CrazyClaw. Business status is returned in the response body `code` field. Tools are stored as an object keyed by `name` in ~/.crazyclaw/crazyclaw.json."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Tools",
+      "description": "Manage tool configuration stored in ~/.crazyclaw/crazyclaw.json."
+    }
+  ],
+  "paths": {
+    "/api/tools": {
+      "get": {
+        "tags": ["Tools"],
+        "summary": "List tools",
+        "operationId": "listTools",
+        "x-apifox-folder": "Tools",
+        "responses": {
+          "200": {
+            "description": "Tools loaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseToolList"
+                },
+                "example": {
+                  "code": 0,
+                  "data": [
+                    {
+                      "name": "shell",
+                      "description": "Run shell commands",
+                      "builtIn": true,
+                      "enabled": true
+                    },
+                    {
+                      "name": "filesystem",
+                      "description": "Read and write workspace files",
+                      "builtIn": false,
+                      "enabled": true
+                    }
+                  ],
+                  "message": "Tools loaded"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Tools"],
+        "summary": "Create tool",
+        "description": "Creates a tool entry under `tools[name]` in crazyclaw.json. If omitted, `builtIn` defaults to false and `enabled` defaults to true.",
+        "operationId": "createTool",
+        "x-apifox-folder": "Tools",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolPayload"
+              },
+              "example": {
+                "name": "filesystem",
+                "description": "Read and write workspace files",
+                "builtIn": false,
+                "enabled": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tool created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTool"
+                },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "name": "filesystem",
+                    "description": "Read and write workspace files",
+                    "builtIn": false,
+                    "enabled": true
+                  },
+                  "message": "Tool created"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Business error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseNull"
+                },
+                "examples": {
+                  "alreadyExists": {
+                    "summary": "Tool already exists",
+                    "value": {
+                      "code": 1202,
+                      "data": null,
+                      "message": "Tool already exists"
+                    }
+                  },
+                  "badRequest": {
+                    "summary": "Invalid tool payload",
+                    "value": {
+                      "code": 1203,
+                      "data": null,
+                      "message": "Invalid tool payload"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tools/{name}": {
+      "get": {
+        "tags": ["Tools"],
+        "summary": "Get tool",
+        "operationId": "getTool",
+        "x-apifox-folder": "Tools",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ToolName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tool loaded or business error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTool"
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Tool loaded",
+                    "value": {
+                      "code": 0,
+                      "data": {
+                        "name": "shell",
+                        "description": "Run shell commands",
+                        "builtIn": true,
+                        "enabled": true
+                      },
+                      "message": "Tool loaded"
+                    }
+                  },
+                  "notFound": {
+                    "summary": "Tool not found",
+                    "value": {
+                      "code": 1201,
+                      "data": null,
+                      "message": "Tool not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Tools"],
+        "summary": "Update tool",
+        "description": "The request body `name` must match the path `name`. Existing built-in status is preserved by the server.",
+        "operationId": "updateTool",
+        "x-apifox-folder": "Tools",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ToolName"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolPayload"
+              },
+              "example": {
+                "name": "shell",
+                "description": "Run shell commands",
+                "builtIn": true,
+                "enabled": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool updated or business error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTool"
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Tool updated",
+                    "value": {
+                      "code": 0,
+                      "data": {
+                        "name": "shell",
+                        "description": "Run shell commands",
+                        "builtIn": true,
+                        "enabled": false
+                      },
+                      "message": "Tool updated"
+                    }
+                  },
+                  "nameChanged": {
+                    "summary": "Tool name cannot be changed",
+                    "value": {
+                      "code": 1203,
+                      "data": null,
+                      "message": "Tool name cannot be changed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Tools"],
+        "summary": "Delete tool",
+        "description": "Deletes only the tool record from crazyclaw.json. It does not remove existing references in agents.tools. Built-in tools cannot be deleted.",
+        "operationId": "deleteTool",
+        "x-apifox-folder": "Tools",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ToolName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tool deleted or business error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseDeleteTool"
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Tool deleted",
+                    "value": {
+                      "code": 0,
+                      "data": {
+                        "name": "filesystem"
+                      },
+                      "message": "Tool deleted"
+                    }
+                  },
+                  "builtInLocked": {
+                    "summary": "Built-in tool cannot be deleted",
+                    "value": {
+                      "code": 1204,
+                      "data": null,
+                      "message": "Built-in tool cannot be deleted"
+                    }
+                  },
+                  "notFound": {
+                    "summary": "Tool not found",
+                    "value": {
+                      "code": 1201,
+                      "data": null,
+                      "message": "Tool not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "ToolName": {
+        "name": "name",
+        "in": "path",
+        "required": true,
+        "description": "Local tool name. Only letters, numbers, underscore and hyphen are accepted.",
+        "schema": {
+          "type": "string",
+          "example": "shell"
+        }
+      }
+    },
+    "schemas": {
+      "ToolPayload": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Local tool name and unique key in crazyclaw.json tools object. Only letters, numbers, underscore and hyphen are accepted.",
+            "example": "shell"
+          },
+          "description": {
+            "type": "string",
+            "example": "Run shell commands"
+          },
+          "builtIn": {
+            "type": "boolean",
+            "description": "Whether this tool is built into CrazyClaw. Defaults to false on create. Existing value is preserved on update.",
+            "example": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether this tool can be selected by agents. Defaults to true on create.",
+            "example": true
+          }
+        }
+      },
+      "ToolView": {
+        "type": "object",
+        "required": ["name", "description", "builtIn", "enabled"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "shell"
+          },
+          "description": {
+            "type": "string",
+            "example": "Run shell commands"
+          },
+          "builtIn": {
+            "type": "boolean",
+            "example": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "DeleteToolData": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "filesystem"
+          }
+        }
+      },
+      "ApiResponseToolList": {
+        "type": "object",
+        "required": ["code", "data", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Business code. 0 means success.",
+            "example": 0
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToolView"
+            }
+          },
+          "message": {
+            "type": "string",
+            "example": "Tools loaded"
+          }
+        }
+      },
+      "ApiResponseTool": {
+        "type": "object",
+        "required": ["code", "data", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Business code. 0 means success.",
+            "example": 0
+          },
+          "data": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ToolView"
+              }
+            ]
+          },
+          "message": {
+            "type": "string",
+            "example": "Tool loaded"
+          }
+        }
+      },
+      "ApiResponseDeleteTool": {
+        "type": "object",
+        "required": ["code", "data", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Business code. 0 means success.",
+            "example": 0
+          },
+          "data": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DeleteToolData"
+              }
+            ]
+          },
+          "message": {
+            "type": "string",
+            "example": "Tool deleted"
+          }
+        }
+      },
+      "ApiResponseNull": {
+        "type": "object",
+        "required": ["code", "data", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Business error code.",
+            "example": 1203
+          },
+          "data": {
+            "nullable": true,
+            "example": null
+          },
+          "message": {
+            "type": "string",
+            "example": "Invalid tool payload"
+          }
+        }
+      }
+    }
+  }
+}

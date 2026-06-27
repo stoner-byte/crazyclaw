@@ -4,6 +4,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import type { AgentConfig } from '../agents/agents.types';
 import type { ModelConfig } from '../models/models.types';
+import type { ToolConfig } from '../tools/tools.types';
 
 export const CRAZYCLAW_ROOT = Symbol('CRAZYCLAW_ROOT');
 export const DEFAULT_CRAZYCLAW_ROOT = join(homedir(), '.crazyclaw');
@@ -13,6 +14,7 @@ const CONFIG_FILE = 'crazyclaw.json';
 export type CrazyclawConfig = {
   agents: AgentConfig[];
   models: ModelConfig[];
+  tools: Record<string, ToolConfig>;
   [key: string]: unknown;
 };
 
@@ -49,6 +51,7 @@ function normalizeConfig(config: Record<string, unknown>): CrazyclawConfig {
     ...config,
     agents: normalizeAgents(config.agents),
     models: normalizeModels(config.models),
+    tools: normalizeTools(config.tools),
   };
 }
 
@@ -62,6 +65,22 @@ function normalizeModels(value: unknown): ModelConfig[] {
   if (Array.isArray(value)) return value as ModelConfig[];
   if (isRecord(value)) return Object.values(value) as ModelConfig[];
   return [];
+}
+
+function normalizeTools(value: unknown): Record<string, ToolConfig> {
+  if (Array.isArray(value)) {
+    return Object.fromEntries(
+      value
+        .filter(isToolRecord)
+        .map((tool) => [tool.name, tool as ToolConfig]),
+    );
+  }
+  if (isRecord(value)) return value as Record<string, ToolConfig>;
+  return {};
+}
+
+function isToolRecord(value: unknown): value is Record<string, unknown> & { name: string } {
+  return isRecord(value) && typeof value.name === 'string';
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
