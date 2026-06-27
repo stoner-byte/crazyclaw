@@ -1,0 +1,589 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "CrazyClaw Server Models API",
+    "version": "0.1.0",
+    "description": "Models configuration management APIs for CrazyClaw. Business status is returned in the response body `code` field. Model test API is intentionally excluded because it requires real provider credentials."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Models",
+      "description": "Manage model configuration stored in ~/.crazyclaw/crazyclaw.json."
+    }
+  ],
+  "paths": {
+    "/api/models": {
+      "get": {
+        "tags": ["Models"],
+        "summary": "List models",
+        "operationId": "listModels",
+        "x-apifox-folder": "Models",
+        "responses": {
+          "200": {
+            "description": "Models loaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseModelList"
+                },
+                "example": {
+                  "code": 0,
+                  "data": [
+                    {
+                      "id": "gpt",
+                      "provider": "openai",
+                      "modelId": "gpt-4o-mini",
+                      "enabled": true,
+                      "baseUrl": "https://api.openai.com/v1",
+                      "input": ["text", "image"],
+                      "hasApiKey": true,
+                      "maskedApiKey": "sk-t********cret"
+                    },
+                    {
+                      "id": "qwen",
+                      "provider": "dashscope",
+                      "modelId": "qwen3-max",
+                      "enabled": true,
+                      "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+                      "input": ["text"],
+                      "hasApiKey": true,
+                      "maskedApiKey": "sk-d********demo"
+                    }
+                  ],
+                  "message": "Models loaded"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Models"],
+        "summary": "Create model",
+        "operationId": "createModel",
+        "x-apifox-folder": "Models",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelPayload"
+              },
+              "example": {
+                "id": "gpt",
+                "provider": "openai",
+                "modelId": "gpt-4o-mini",
+                "enabled": true,
+                "baseUrl": "https://api.openai.com/v1",
+                "apiKey": "sk-demo-key",
+                "input": ["text", "image"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Model created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseModel"
+                },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "id": "gpt",
+                    "provider": "openai",
+                    "modelId": "gpt-4o-mini",
+                    "enabled": true,
+                    "baseUrl": "https://api.openai.com/v1",
+                    "input": ["text", "image"],
+                    "hasApiKey": true,
+                    "maskedApiKey": "sk-d********-key"
+                  },
+                  "message": "Model created"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Business error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseNull"
+                },
+                "examples": {
+                  "alreadyExists": {
+                    "summary": "Model already exists",
+                    "value": {
+                      "code": 1102,
+                      "data": null,
+                      "message": "Model already exists"
+                    }
+                  },
+                  "badRequest": {
+                    "summary": "Invalid model payload",
+                    "value": {
+                      "code": 1103,
+                      "data": null,
+                      "message": "Invalid model payload"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/models/{id}": {
+      "get": {
+        "tags": ["Models"],
+        "summary": "Get model",
+        "operationId": "getModel",
+        "x-apifox-folder": "Models",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Local model configuration id.",
+            "schema": {
+              "type": "string",
+              "example": "gpt"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Model loaded or business error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseModel"
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Model loaded",
+                    "value": {
+                      "code": 0,
+                      "data": {
+                        "id": "gpt",
+                        "provider": "openai",
+                        "modelId": "gpt-4o-mini",
+                        "enabled": true,
+                        "baseUrl": "https://api.openai.com/v1",
+                        "input": ["text", "image"],
+                        "hasApiKey": true,
+                        "maskedApiKey": "sk-d********-key"
+                      },
+                      "message": "Model loaded"
+                    }
+                  },
+                  "notFound": {
+                    "summary": "Model not found",
+                    "value": {
+                      "code": 1101,
+                      "data": null,
+                      "message": "Model not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Models"],
+        "summary": "Update model",
+        "description": "The request body `id` must match the path `id`. Leave `apiKey` empty to keep the existing key.",
+        "operationId": "updateModel",
+        "x-apifox-folder": "Models",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Local model configuration id.",
+            "schema": {
+              "type": "string",
+              "example": "gpt"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelPayload"
+              },
+              "example": {
+                "id": "gpt",
+                "provider": "openai",
+                "modelId": "gpt-4o-mini",
+                "enabled": false,
+                "baseUrl": "https://api.openai.com/v1",
+                "apiKey": "",
+                "input": ["text"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Model updated or business error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseModel"
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Model updated",
+                    "value": {
+                      "code": 0,
+                      "data": {
+                        "id": "gpt",
+                        "provider": "openai",
+                        "modelId": "gpt-4o-mini",
+                        "enabled": false,
+                        "baseUrl": "https://api.openai.com/v1",
+                        "input": ["text"],
+                        "hasApiKey": true,
+                        "maskedApiKey": "sk-d********-key"
+                      },
+                      "message": "Model updated"
+                    }
+                  },
+                  "idChanged": {
+                    "summary": "Model id cannot be changed",
+                    "value": {
+                      "code": 1103,
+                      "data": null,
+                      "message": "Model id cannot be changed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Models"],
+        "summary": "Delete model",
+        "operationId": "deleteModel",
+        "x-apifox-folder": "Models",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Local model configuration id.",
+            "schema": {
+              "type": "string",
+              "example": "gpt"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Model deleted or business error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseDeleteModel"
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Model deleted",
+                    "value": {
+                      "code": 0,
+                      "data": {
+                        "id": "gpt"
+                      },
+                      "message": "Model deleted"
+                    }
+                  },
+                  "notFound": {
+                    "summary": "Model not found",
+                    "value": {
+                      "code": 1101,
+                      "data": null,
+                      "message": "Model not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ModelProvider": {
+        "type": "string",
+        "enum": [
+          "openai",
+          "deepseek",
+          "dashscope",
+          "kimi-cn",
+          "kimi-codingplan",
+          "anthropic",
+          "ollama"
+        ],
+        "example": "openai"
+      },
+      "ModelInput": {
+        "type": "string",
+        "enum": ["text", "image", "video"],
+        "example": "text"
+      },
+      "ModelPayload": {
+        "type": "object",
+        "required": ["id", "provider", "modelId", "enabled", "baseUrl", "apiKey", "input"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Local model configuration id. Only letters, numbers, underscore and hyphen are accepted.",
+            "example": "gpt"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/ModelProvider"
+          },
+          "modelId": {
+            "type": "string",
+            "description": "Provider-side model id.",
+            "example": "gpt-4o-mini"
+          },
+          "enabled": {
+            "type": "boolean",
+            "example": true
+          },
+          "baseUrl": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://api.openai.com/v1"
+          },
+          "apiKey": {
+            "type": "string",
+            "description": "Provider API key. Leave empty on update to keep the existing key.",
+            "example": "sk-demo-key"
+          },
+          "input": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelInput"
+            },
+            "example": ["text", "image"]
+          }
+        }
+      },
+      "ModelView": {
+        "type": "object",
+        "required": [
+          "id",
+          "provider",
+          "modelId",
+          "enabled",
+          "baseUrl",
+          "input",
+          "hasApiKey",
+          "maskedApiKey"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "gpt"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/ModelProvider"
+          },
+          "modelId": {
+            "type": "string",
+            "example": "gpt-4o-mini"
+          },
+          "enabled": {
+            "type": "boolean",
+            "example": true
+          },
+          "baseUrl": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://api.openai.com/v1"
+          },
+          "input": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelInput"
+            },
+            "example": ["text", "image"]
+          },
+          "hasApiKey": {
+            "type": "boolean",
+            "example": true
+          },
+          "maskedApiKey": {
+            "type": "string",
+            "description": "Masked API key. Plain API keys are never returned.",
+            "example": "sk-d********-key"
+          }
+        }
+      },
+      "DeleteModelData": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "gpt"
+          }
+        }
+      },
+      "ApiResponseModelList": {
+        "type": "object",
+        "required": ["code", "data", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Business code. 0 means success.",
+            "example": 0
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelView"
+            }
+          },
+          "message": {
+            "type": "string",
+            "example": "Models loaded"
+          }
+        }
+      },
+      "ApiResponseModel": {
+        "type": "object",
+        "required": ["code", "data", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Business code. 0 means success.",
+            "example": 0
+          },
+          "data": {
+            "type": "object",
+            "nullable": true,
+            "required": [
+              "id",
+              "provider",
+              "modelId",
+              "enabled",
+              "baseUrl",
+              "input",
+              "hasApiKey",
+              "maskedApiKey"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "example": "gpt"
+              },
+              "provider": {
+                "$ref": "#/components/schemas/ModelProvider"
+              },
+              "modelId": {
+                "type": "string",
+                "example": "gpt-4o-mini"
+              },
+              "enabled": {
+                "type": "boolean",
+                "example": true
+              },
+              "baseUrl": {
+                "type": "string",
+                "format": "uri",
+                "example": "https://api.openai.com/v1"
+              },
+              "input": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ModelInput"
+                },
+                "example": ["text", "image"]
+              },
+              "hasApiKey": {
+                "type": "boolean",
+                "example": true
+              },
+              "maskedApiKey": {
+                "type": "string",
+                "description": "Masked API key. Plain API keys are never returned.",
+                "example": "sk-d********-key"
+              }
+            }
+          },
+          "message": {
+            "type": "string",
+            "example": "Model loaded"
+          }
+        }
+      },
+      "ApiResponseDeleteModel": {
+        "type": "object",
+        "required": ["code", "data", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Business code. 0 means success.",
+            "example": 0
+          },
+          "data": {
+            "type": "object",
+            "nullable": true,
+            "required": ["id"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "example": "gpt"
+              }
+            }
+          },
+          "message": {
+            "type": "string",
+            "example": "Model deleted"
+          }
+        }
+      },
+      "ApiResponseNull": {
+        "type": "object",
+        "required": ["code", "data", "message"],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Business error code.",
+            "example": 1103
+          },
+          "data": {
+            "nullable": true,
+            "example": null
+          },
+          "message": {
+            "type": "string",
+            "example": "Invalid model payload"
+          }
+        }
+      }
+    }
+  }
+}

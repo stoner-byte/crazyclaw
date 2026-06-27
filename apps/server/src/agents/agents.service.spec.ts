@@ -1,6 +1,7 @@
-import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { ConfigFileService } from '../config/config-file.service';
 import { AgentsService } from './agents.service';
 
 describe('AgentsService', () => {
@@ -9,7 +10,7 @@ describe('AgentsService', () => {
 
   beforeEach(async () => {
     rootDir = await mkdtemp(join(tmpdir(), 'crazyclaw-agents-'));
-    service = new AgentsService(rootDir);
+    service = new AgentsService(new ConfigFileService(rootDir));
   });
 
   afterEach(async () => {
@@ -61,6 +62,41 @@ describe('AgentsService', () => {
       workspaces: [defaultWorkspace],
     });
     expect(config.agents.coder.systemPrompt).toBeUndefined();
+  });
+
+  it('preserves models config when writing agents', async () => {
+    await writeFile(
+      join(rootDir, 'crazyclaw.json'),
+      `${JSON.stringify({
+        models: [
+          {
+            id: 'gpt',
+            provider: 'openai',
+            modelId: 'gpt-4o-mini',
+            enabled: true,
+            baseUrl: 'https://api.openai.com/v1',
+            apiKey: 'secret-key',
+            input: ['text'],
+          },
+        ],
+      })}\n`,
+    );
+
+    await service.create({
+      id: 'coder',
+      description: '',
+      enabled: true,
+      tools: [],
+      systemPrompt: '',
+    });
+
+    const config = JSON.parse(
+      await readFile(join(rootDir, 'crazyclaw.json'), 'utf8'),
+    );
+    expect(config.models).toEqual([
+      expect.objectContaining({ id: 'gpt', apiKey: 'secret-key' }),
+    ]);
+    expect(config.agents.coder.id).toBe('coder');
   });
 
   it('rejects duplicate agents', async () => {

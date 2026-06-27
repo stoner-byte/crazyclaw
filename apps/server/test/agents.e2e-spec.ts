@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
-import { CRAZYCLAW_ROOT } from './../src/agents/agents.service';
+import { CRAZYCLAW_ROOT } from './../src/config/config-file.service';
 
 describe('AgentsController (e2e)', () => {
   let app: INestApplication<App>;
