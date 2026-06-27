@@ -21,6 +21,7 @@ import { errorConfig } from './requestErrorConfig';
 const isDev = process.env.NODE_ENV === 'development';
 const defaultCurrentUser: API.CurrentUser = {
   name: 'CrazyClaw',
+  avatar: '/pro_icon.svg',
   access: 'admin',
 };
 

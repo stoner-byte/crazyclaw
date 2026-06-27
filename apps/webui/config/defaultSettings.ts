@@ -8,10 +8,12 @@ const Settings: ProLayoutProps & {
 } = {
   navTheme: 'light',
   colorPrimary: '#1677ff',
-  layout: 'mix',
+  layout: 'side',
   contentWidth: 'Fluid',
   fixedHeader: false,
   fixSiderbar: true,
+  breakpoint: false,
+  defaultCollapsed: true,
   colorWeak: false,
   title: 'CrazyClaw',
   logo: '/pro_icon.svg',

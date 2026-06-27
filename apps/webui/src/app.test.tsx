@@ -66,6 +66,7 @@ describe('app getInitialState', () => {
     expect(mockQueryCurrentUser).not.toHaveBeenCalled();
     expect(state.currentUser).toEqual({
       name: 'CrazyClaw',
+      avatar: '/pro_icon.svg',
       access: 'admin',
     });
     expect(state.settingDrawerOpen).toBe(false);
@@ -82,6 +83,7 @@ describe('app getInitialState', () => {
     expect(mockQueryCurrentUser).not.toHaveBeenCalled();
     expect(state.currentUser).toEqual({
       name: 'CrazyClaw',
+      avatar: '/pro_icon.svg',
       access: 'admin',
     });
   });
@@ -100,7 +102,11 @@ describe('app getInitialState', () => {
     const state = await getInitialState();
 
     const user = await state.fetchUserInfo?.();
-    expect(user).toEqual({ name: 'CrazyClaw', access: 'admin' });
+    expect(user).toEqual({
+      name: 'CrazyClaw',
+      avatar: '/pro_icon.svg',
+      access: 'admin',
+    });
   });
 });
 

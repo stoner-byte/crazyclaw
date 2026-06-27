@@ -8,16 +8,21 @@ describe('routes', () => {
       .map((route) => route.name);
 
     expect(visibleTopLevelMenus).toEqual([
+      'chatbot',
       'agents',
       'models',
       'tools',
-      'chatbot',
     ]);
   });
 
   it('adds the initial agent workspace menus', () => {
     expect(routes).toEqual(
       expect.arrayContaining([
+        expect.objectContaining({
+          path: '/chatbot',
+          name: 'chatbot',
+          component: './chatbot',
+        }),
         expect.objectContaining({
           path: '/agents',
           name: 'agents',
@@ -35,5 +40,12 @@ describe('routes', () => {
         }),
       ]),
     );
+  });
+
+  it('redirects home to the AI assistant', () => {
+    expect(routes).toContainEqual({
+      path: '/',
+      redirect: '/chatbot',
+    });
   });
 });

@@ -69,6 +69,12 @@ export default [
     ],
   },
   {
+    path: '/chatbot',
+    name: 'chatbot',
+    icon: 'message',
+    component: './chatbot',
+  },
+  {
     path: '/agents',
     name: 'agents',
     icon: 'robot',
@@ -308,14 +314,8 @@ export default [
     ],
   },
   {
-    path: '/chatbot',
-    name: 'chatbot',
-    icon: 'robot',
-    component: './chatbot',
-  },
-  {
     path: '/',
-    redirect: '/agents',
+    redirect: '/chatbot',
   },
   {
     component: './exception/404',
