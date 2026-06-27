@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Agents from './index';
 import * as service from './service';
+import * as toolsService from '../tools/service';
 
 vi.mock('@ant-design/pro-components', () => ({
   PageContainer: ({ children, extra }: any) => (
@@ -17,6 +18,10 @@ vi.mock('./service', () => ({
   deleteAgent: vi.fn(),
   listAgents: vi.fn(),
   updateAgent: vi.fn(),
+}));
+
+vi.mock('../tools/service', () => ({
+  listTools: vi.fn(),
 }));
 
 const coder = {
@@ -50,6 +55,24 @@ describe('Agents page', () => {
       code: 0,
       data: { id: 'coder' },
       message: 'Agent deleted',
+    });
+    vi.mocked(toolsService.listTools).mockResolvedValue({
+      code: 0,
+      data: [
+        {
+          name: 'shell',
+          description: 'Run shell commands',
+          builtIn: true,
+          enabled: true,
+        },
+        {
+          name: 'disabled-tool',
+          description: '',
+          builtIn: false,
+          enabled: false,
+        },
+      ],
+      message: 'Tools loaded',
     });
   });
 
@@ -151,6 +174,25 @@ describe('Agents page', () => {
         expect.objectContaining({ tools: ['test', 'shell'] }),
       );
     });
+  });
+
+  it('loads enabled tools as form options', async () => {
+    vi.mocked(service.listAgents).mockResolvedValue({
+      code: 0,
+      data: [],
+      message: 'Agents loaded',
+    });
+
+    render(<Agents />);
+    fireEvent.click(await screen.findByRole('button', { name: /新增 Agent/ }));
+
+    await waitFor(() => {
+      expect(toolsService.listTools).toHaveBeenCalled();
+    });
+    fireEvent.mouseDown(screen.getByLabelText('工具'));
+
+    expect(await screen.findByRole('option', { name: 'shell' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'disabled-tool' })).not.toBeInTheDocument();
   });
 
   it('shows API error message', async () => {

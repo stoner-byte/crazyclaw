@@ -37,6 +37,8 @@ import {
   listAgents,
   updateAgent,
 } from './service';
+import { listTools } from '../tools/service';
+import type { ToolView } from '../tools/service';
 
 type FormValues = Omit<AgentPayload, 'workspaces'> & {
   extraWorkspaces?: string[];
@@ -71,6 +73,7 @@ const modalSectionTitleStyle: CSSProperties = { marginBottom: 12 };
 
 const Agents = () => {
   const [agents, setAgents] = useState<AgentView[]>([]);
+  const [tools, setTools] = useState<ToolView[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState('');
@@ -82,6 +85,13 @@ const Agents = () => {
 
   const defaultWorkspace = editingAgent?.workspaces[0] ?? '';
   const modalTitle = editingAgent ? `编辑 ${editingAgent.id}` : '新增 Agent';
+  const toolOptions = useMemo(
+    () =>
+      tools
+        .filter((tool) => tool.enabled)
+        .map((tool) => ({ label: tool.name, value: tool.name })),
+    [tools],
+  );
 
   const loadAgents = async () => {
     setLoading(true);
@@ -97,8 +107,16 @@ const Agents = () => {
     setAgents(response.data ?? []);
   };
 
+  const loadTools = async () => {
+    const response = await listTools();
+    if (response.code === 0) {
+      setTools(response.data ?? []);
+    }
+  };
+
   useEffect(() => {
     void loadAgents();
+    void loadTools();
   }, []);
 
   const openCreate = () => {
@@ -387,7 +405,11 @@ const Agents = () => {
                 normalize={normalizeStringList}
                 style={{ marginBottom: 0 }}
               >
-                <Select mode="tags" placeholder="输入工具名称后回车" />
+                <Select
+                  mode="tags"
+                  options={toolOptions}
+                  placeholder="输入工具名称后回车"
+                />
               </Form.Item>
             </div>
 
