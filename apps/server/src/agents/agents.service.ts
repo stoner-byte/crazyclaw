@@ -22,7 +22,7 @@ export class AgentsService {
     return this.safe(async () => {
       const config = await this.readConfig();
       const agents = await Promise.all(
-        Object.values(config.agents).map((agent) => this.toView(agent)),
+        config.agents.map((agent) => this.toView(agent)),
       );
       return apiOk(agents, 'Agents loaded');
     });
@@ -34,7 +34,7 @@ export class AgentsService {
     }
     return this.safe(async () => {
       const config = await this.readConfig();
-      const agent = config.agents[id];
+      const agent = findAgent(config.agents, id);
       if (!agent) return apiFail(AGENT_CODES.NOT_FOUND, 'Agent not found');
       return apiOk(await this.toView(agent), 'Agent loaded');
     });
@@ -48,16 +48,16 @@ export class AgentsService {
 
     return this.safe(async () => {
       const config = await this.readConfig();
-      if (config.agents[normalized.id]) {
+      if (findAgent(config.agents, normalized.id)) {
         return apiFail(AGENT_CODES.ALREADY_EXISTS, 'Agent already exists');
       }
 
       await mkdir(this.defaultWorkspace(normalized.id), { recursive: true });
       await this.writePrompt(normalized.id, normalized.systemPrompt);
-      config.agents[normalized.id] = stripPrompt(normalized);
+      config.agents.push(stripPrompt(normalized));
       await this.writeConfig(config);
 
-      return apiOk(await this.toView(config.agents[normalized.id]), 'Agent created');
+      return apiOk(normalized, 'Agent created');
     });
   }
 
@@ -71,7 +71,8 @@ export class AgentsService {
 
     return this.safe(async () => {
       const config = await this.readConfig();
-      if (!config.agents[id]) {
+      const index = findAgentIndex(config.agents, id);
+      if (index === -1) {
         return apiFail(AGENT_CODES.NOT_FOUND, 'Agent not found');
       }
 
@@ -88,10 +89,10 @@ export class AgentsService {
 
       await mkdir(this.defaultWorkspace(id), { recursive: true });
       await this.writePrompt(id, normalized.systemPrompt);
-      config.agents[id] = stripPrompt(normalized);
+      config.agents[index] = stripPrompt(normalized);
       await this.writeConfig(config);
 
-      return apiOk(await this.toView(config.agents[id]), 'Agent updated');
+      return apiOk(normalized, 'Agent updated');
     });
   }
 
@@ -101,10 +102,11 @@ export class AgentsService {
     }
     return this.safe(async () => {
       const config = await this.readConfig();
-      if (!config.agents[id]) {
+      const index = findAgentIndex(config.agents, id);
+      if (index === -1) {
         return apiFail(AGENT_CODES.NOT_FOUND, 'Agent not found');
       }
-      delete config.agents[id];
+      config.agents.splice(index, 1);
       await this.writeConfig(config);
       return apiOk({ id }, 'Agent deleted');
     });
@@ -212,6 +214,14 @@ function stripPrompt(agent: AgentView): AgentConfig {
     tools: agent.tools,
     workspaces: agent.workspaces,
   };
+}
+
+function findAgent(agents: AgentConfig[], id: string): AgentConfig | undefined {
+  return agents.find((agent) => agent.id === id);
+}
+
+function findAgentIndex(agents: AgentConfig[], id: string): number {
+  return agents.findIndex((agent) => agent.id === id);
 }
 
 function isNotFound(error: unknown): boolean {

@@ -11,7 +11,7 @@ export const DEFAULT_CRAZYCLAW_ROOT = join(homedir(), '.crazyclaw');
 const CONFIG_FILE = 'crazyclaw.json';
 
 export type CrazyclawConfig = {
-  agents: Record<string, AgentConfig>;
+  agents: AgentConfig[];
   models: ModelConfig[];
   [key: string]: unknown;
 };
@@ -47,11 +47,15 @@ export class ConfigFileService {
 function normalizeConfig(config: Record<string, unknown>): CrazyclawConfig {
   return {
     ...config,
-    agents: isRecord(config.agents)
-      ? (config.agents as Record<string, AgentConfig>)
-      : {},
+    agents: normalizeAgents(config.agents),
     models: normalizeModels(config.models),
   };
+}
+
+function normalizeAgents(value: unknown): AgentConfig[] {
+  if (Array.isArray(value)) return value as AgentConfig[];
+  if (isRecord(value)) return Object.values(value) as AgentConfig[];
+  return [];
 }
 
 function normalizeModels(value: unknown): ModelConfig[] {

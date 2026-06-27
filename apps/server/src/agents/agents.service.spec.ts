@@ -54,14 +54,16 @@ describe('AgentsService', () => {
     const config = JSON.parse(
       await readFile(join(rootDir, 'crazyclaw.json'), 'utf8'),
     );
-    expect(config.agents.coder).toEqual({
-      id: 'coder',
-      description: 'Coding assistant',
-      enabled: true,
-      tools: ['shell'],
-      workspaces: [defaultWorkspace],
-    });
-    expect(config.agents.coder.systemPrompt).toBeUndefined();
+    expect(config.agents).toEqual([
+      {
+        id: 'coder',
+        description: 'Coding assistant',
+        enabled: true,
+        tools: ['shell'],
+        workspaces: [defaultWorkspace],
+      },
+    ]);
+    expect(config.agents[0].systemPrompt).toBeUndefined();
   });
 
   it('preserves models config when writing agents', async () => {
@@ -96,7 +98,40 @@ describe('AgentsService', () => {
     expect(config.models).toEqual([
       expect.objectContaining({ id: 'gpt', apiKey: 'secret-key' }),
     ]);
-    expect(config.agents.coder.id).toBe('coder');
+    expect(config.agents).toEqual([expect.objectContaining({ id: 'coder' })]);
+  });
+
+  it('migrates legacy object-shaped agents config to an array on write', async () => {
+    await writeFile(
+      join(rootDir, 'crazyclaw.json'),
+      `${JSON.stringify({
+        agents: {
+          coder: {
+            id: 'coder',
+            description: '',
+            enabled: true,
+            tools: [],
+            workspaces: [join(rootDir, 'coder')],
+          },
+        },
+      })}\n`,
+    );
+
+    await service.create({
+      id: 'reviewer',
+      description: '',
+      enabled: true,
+      tools: [],
+      systemPrompt: '',
+    });
+
+    const config = JSON.parse(
+      await readFile(join(rootDir, 'crazyclaw.json'), 'utf8'),
+    );
+    expect(config.agents).toEqual([
+      expect.objectContaining({ id: 'coder' }),
+      expect.objectContaining({ id: 'reviewer' }),
+    ]);
   });
 
   it('rejects duplicate agents', async () => {
@@ -183,8 +218,8 @@ describe('AgentsService', () => {
     const config = JSON.parse(
       await readFile(join(rootDir, 'crazyclaw.json'), 'utf8'),
     );
-    expect(config.agents.coder.systemPrompt).toBeUndefined();
-    expect(config.agents.coder.workspaces).toEqual([
+    expect(config.agents[0].systemPrompt).toBeUndefined();
+    expect(config.agents[0].workspaces).toEqual([
       join(rootDir, 'coder'),
       '/tmp/project',
     ]);

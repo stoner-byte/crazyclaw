@@ -136,7 +136,7 @@ describe('ModelsService', () => {
       await readFile(join(rootDir, 'crazyclaw.json'), 'utf8'),
     );
     expect(config.models).toEqual([]);
-    expect(config.agents.coder.id).toBe('coder');
+    expect(config.agents).toEqual([expect.objectContaining({ id: 'coder' })]);
   });
 
   it('rejects invalid payloads', async () => {
