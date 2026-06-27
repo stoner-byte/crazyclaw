@@ -58,90 +58,49 @@ describe('app getInitialState', () => {
     };
   });
 
-  it('should fetch currentUser when not on login page', async () => {
+  it('should return local currentUser without fetching remote user', async () => {
     const { getInitialState } = await import('./app');
-    mockQueryCurrentUser.mockResolvedValue({
-      data: {
-        name: 'Test User',
-        access: 'admin',
-      },
-    });
 
     const state = await getInitialState();
 
-    expect(mockQueryCurrentUser).toHaveBeenCalled();
+    expect(mockQueryCurrentUser).not.toHaveBeenCalled();
     expect(state.currentUser).toEqual({
-      name: 'Test User',
+      name: 'CrazyClaw',
       access: 'admin',
     });
     expect(state.settingDrawerOpen).toBe(false);
     expect(state.fetchUserInfo).toBeDefined();
   });
 
-  it('should redirect to login when currentUser fetch fails (401)', async () => {
+  it('should not redirect when remote currentUser would fail', async () => {
     const { getInitialState } = await import('./app');
     mockQueryCurrentUser.mockRejectedValue(new Error('401 Unauthorized'));
 
     const state = await getInitialState();
 
-    expect(mockReplace).toHaveBeenCalledWith(
-      expect.stringContaining('/user/login?redirect='),
-    );
-    expect(state.currentUser).toBeUndefined();
-  });
-
-  it('should not fetch currentUser on login page', async () => {
-    const { getInitialState } = await import('./app');
-    mockHistory.location = {
-      pathname: '/user/login',
-      search: '',
-      hash: '',
-    };
-
-    const state = await getInitialState();
-
+    expect(mockReplace).not.toHaveBeenCalled();
     expect(mockQueryCurrentUser).not.toHaveBeenCalled();
-    expect(state.currentUser).toBeUndefined();
-    expect(state.fetchUserInfo).toBeDefined();
-  });
-
-  it('should encode redirect path correctly on 401', async () => {
-    const { getInitialState } = await import('./app');
-    mockHistory.location = {
-      pathname: '/admin/users',
-      search: '?page=2',
-      hash: '#section',
-    };
-    mockQueryCurrentUser.mockRejectedValue(new Error('401'));
-
-    await getInitialState();
-
-    expect(mockReplace).toHaveBeenCalledWith(
-      `/user/login?redirect=${encodeURIComponent('/admin/users?page=2#section')}`,
-    );
+    expect(state.currentUser).toEqual({
+      name: 'CrazyClaw',
+      access: 'admin',
+    });
   });
 
   it('should include default settings in initial state', async () => {
     const { getInitialState } = await import('./app');
-    mockQueryCurrentUser.mockResolvedValue({
-      data: { name: 'User' },
-    });
 
     const state = await getInitialState();
 
     expect(state.settings).toEqual({ navTheme: 'light' });
   });
 
-  it('fetchUserInfo should return user data on success', async () => {
+  it('fetchUserInfo should return local user data', async () => {
     const { getInitialState } = await import('./app');
-    mockQueryCurrentUser.mockResolvedValue({
-      data: { name: 'Fetched User', access: 'user' },
-    });
 
     const state = await getInitialState();
 
     const user = await state.fetchUserInfo?.();
-    expect(user).toEqual({ name: 'Fetched User', access: 'user' });
+    expect(user).toEqual({ name: 'CrazyClaw', access: 'admin' });
   });
 });
 
@@ -157,5 +116,19 @@ describe('app layout', () => {
     } as any);
 
     expect(config.links).toEqual([]);
+  });
+
+  it('does not redirect to login on page change', async () => {
+    vi.resetModules();
+
+    const { layout } = await import('./app');
+    const config = layout({
+      initialState: { settings: {} },
+      setInitialState: vi.fn(),
+    } as any);
+
+    config.onPageChange?.({} as any);
+
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 });
