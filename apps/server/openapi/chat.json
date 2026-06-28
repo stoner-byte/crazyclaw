@@ -1,0 +1,123 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "CrazyClaw Server Chat API",
+    "version": "0.1.0",
+    "description": "Chat streaming APIs for CrazyClaw. The stream endpoint uses Server-Sent Events and does not use the standard JSON ApiResponse wrapper."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Chat",
+      "description": "Stream agent chat responses."
+    }
+  ],
+  "paths": {
+    "/api/chat": {
+      "get": {
+        "tags": ["Chat"],
+        "summary": "Run chat smoke test",
+        "description": "Runs the current hard-coded chat smoke test on the server side. This endpoint currently does not accept parameters and does not return streamed response content.",
+        "operationId": "testChat",
+        "x-apifox-folder": "Chat",
+        "responses": {
+          "200": {
+            "description": "Smoke test finished. The current implementation returns an empty response body."
+          }
+        }
+      }
+    },
+    "/api/chat/stream": {
+      "get": {
+        "tags": ["Chat"],
+        "summary": "Stream chat response",
+        "description": "Opens a Server-Sent Events stream. Query fields are optional in the current skeleton and will become required when the internal chat logic is implemented.",
+        "operationId": "streamChat",
+        "x-apifox-folder": "Chat",
+        "parameters": [
+          {
+            "name": "agentName",
+            "in": "query",
+            "required": false,
+            "description": "Agent configuration id.",
+            "schema": {
+              "type": "string",
+              "example": "coder"
+            }
+          },
+          {
+            "name": "modelName",
+            "in": "query",
+            "required": false,
+            "description": "Model configuration id.",
+            "schema": {
+              "type": "string",
+              "example": "qwen"
+            }
+          },
+          {
+            "name": "message",
+            "in": "query",
+            "required": false,
+            "description": "User input message.",
+            "schema": {
+              "type": "string",
+              "example": "你好，你是谁？"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSE stream opened",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "description": "Server-Sent Events stream. Each event contains JSON in the `data` field."
+                },
+                "examples": {
+                  "content": {
+                    "summary": "Content event",
+                    "value": "event: content\ndata: {\"text\":\"你好\"}\n\n"
+                  },
+                  "done": {
+                    "summary": "Done event",
+                    "value": "event: done\ndata: {}\n\n"
+                  },
+                  "error": {
+                    "summary": "Error event",
+                    "value": "event: error\ndata: {\"message\":\"Model not found\"}\n\n"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChatStreamEvent": {
+        "type": "object",
+        "description": "Logical event payload carried by the SSE `data` field.",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Streamed text content."
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message when event type is `error`."
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

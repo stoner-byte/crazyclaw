@@ -3,6 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AgentsController } from './agents/agents.controller';
 import { AgentsService } from './agents/agents.service';
+import { ChatController } from './chat/chat.controller';
+import { ChatService } from './chat/chat.service';
 import {
   ConfigFileService,
   CRAZYCLAW_ROOT,
@@ -15,11 +17,18 @@ import { ToolsService } from './tools/tools.service';
 
 @Module({
   imports: [],
-  controllers: [AppController, AgentsController, ModelsController, ToolsController],
+  controllers: [
+    AppController,
+    AgentsController,
+    ChatController,
+    ModelsController,
+    ToolsController,
+  ],
   providers: [
     AppService,
     ConfigFileService,
     AgentsService,
+    ChatService,
     ModelsService,
     ToolsService,
     {

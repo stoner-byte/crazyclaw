@@ -1,5 +1,5 @@
 {
-  "name": "@carzyclaw/core",
+  "name": "@crazyclaw/core",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,6 +9,7 @@
       "default": "./dist/index.js"
     }
   },
+  "files": ["dist"],
   "scripts": {
     "clean": "rimraf dist",
     "build": "pnpm clean && tsc -p tsconfig.json",
