@@ -32,6 +32,7 @@ const commitHash =
  * @doc https://umijs.org/docs/api/config#publicpath
  */
 const PUBLIC_PATH: string = '/';
+const API_BASE_URL = process.env.UMI_APP_API_BASE_URL || 'http://localhost:3000';
 
 export default defineConfig({
   alias: {
@@ -229,6 +230,7 @@ export default defineConfig({
   define: {
     'process.env.CI': process.env.CI,
     'process.env.COMMIT_HASH': commitHash,
+    'process.env.UMI_APP_API_BASE_URL': API_BASE_URL,
     __APP_VERSION__: require('./../package.json').version,
     __UMI_VERSION__: require('@umijs/max/package.json').version,
     __UTOO_VERSION__: require('@utoo/pack/package.json').version,

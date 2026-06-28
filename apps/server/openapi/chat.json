@@ -3,7 +3,7 @@
   "info": {
     "title": "CrazyClaw Server Chat API",
     "version": "0.1.0",
-    "description": "Chat streaming APIs for CrazyClaw. The stream endpoint uses Server-Sent Events and does not use the standard JSON ApiResponse wrapper."
+    "description": "Chat streaming APIs for CrazyClaw. Chat endpoints return Server-Sent Events directly and do not use the standard JSON ApiResponse wrapper."
   },
   "servers": [
     {
@@ -21,13 +21,63 @@
     "/api/chat": {
       "get": {
         "tags": ["Chat"],
-        "summary": "Run chat smoke test",
-        "description": "Runs the current hard-coded chat smoke test on the server side. This endpoint currently does not accept parameters and does not return streamed response content.",
-        "operationId": "testChat",
+        "summary": "Stream chat by query",
+        "description": "Convenience testing endpoint. It converts `input` into a user message and streams the same OpenAI-compatible SSE response as `POST /api/chat`. The current implementation uses hard-coded `coder` agent and `qwen` model.",
+        "operationId": "testChatByQuery",
         "x-apifox-folder": "Chat",
+        "parameters": [
+          {
+            "name": "input",
+            "in": "query",
+            "required": true,
+            "description": "User input message.",
+            "schema": {
+              "type": "string",
+              "example": "你好，你是谁？"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Smoke test finished. The current implementation returns an empty response body."
+            "$ref": "#/components/responses/OpenAIStream"
+          },
+          "400": {
+            "description": "Input is empty"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Chat"],
+        "summary": "Stream chat",
+        "description": "Main chat endpoint used by the web chat page. The request body follows the OpenAI chat-completions shape enough for Ant Design X's OpenAI provider. The current implementation reads the latest user message and uses hard-coded `coder` agent and `qwen` model.",
+        "operationId": "testChat",
+        "x-apifox-folder": "Chat",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenAIChatRequest"
+              },
+              "example": {
+                "model": "glm-4.5-flash",
+                "stream": true,
+                "messages": [
+                  {
+                    "role": "user",
+                    "content": "你好，你是谁？"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/OpenAIStream"
+          },
+          "400": {
+            "description": "Input is empty"
           }
         }
       }
@@ -102,7 +152,62 @@
     }
   },
   "components": {
+    "responses": {
+      "OpenAIStream": {
+        "description": "OpenAI-compatible SSE stream",
+        "content": {
+          "text/event-stream": {
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "content": {
+                "summary": "Content chunk",
+                "value": "data: {\"choices\":[{\"delta\":{\"content\":\"你好\"}}]}\n\n"
+              },
+              "done": {
+                "summary": "Done chunk",
+                "value": "data: [DONE]\n\n"
+              }
+            }
+          }
+        }
+      }
+    },
     "schemas": {
+      "OpenAIChatRequest": {
+        "type": "object",
+        "required": ["messages"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "glm-4.5-flash"
+          },
+          "stream": {
+            "type": "boolean",
+            "example": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["role", "content"],
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": ["user", "assistant", "system"],
+                  "example": "user"
+                },
+                "content": {
+                  "type": "string",
+                  "example": "你好，你是谁？"
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": true
+      },
       "ChatStreamEvent": {
         "type": "object",
         "description": "Logical event payload carried by the SSE `data` field.",
