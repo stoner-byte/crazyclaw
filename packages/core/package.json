@@ -48,5 +48,9 @@
       ]
     },
     "testEnvironment": "node"
+  },
+  "dependencies": {
+    "@langchain/openai": "^1.5.3",
+    "langchain": "^1.5.2"
   }
 }
