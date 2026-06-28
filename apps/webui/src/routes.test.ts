@@ -19,7 +19,7 @@ describe('routes', () => {
     expect(routes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          path: '/chatbot',
+          path: '/chat',
           name: 'chatbot',
           component: './chatbot',
         }),
@@ -45,7 +45,7 @@ describe('routes', () => {
   it('redirects home to the AI assistant', () => {
     expect(routes).toContainEqual({
       path: '/',
-      redirect: '/chatbot',
+      redirect: '/chat',
     });
   });
 });

@@ -69,7 +69,7 @@ export default [
     ],
   },
   {
-    path: '/chatbot',
+    path: '/chat',
     name: 'chatbot',
     icon: 'message',
     component: './chatbot',
@@ -315,7 +315,7 @@ export default [
   },
   {
     path: '/',
-    redirect: '/chatbot',
+    redirect: '/chat',
   },
   {
     component: './exception/404',
