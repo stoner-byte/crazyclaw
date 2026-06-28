@@ -1,4 +1,4 @@
-// src/pages/chatbot/service.ts
+// src/pages/chat/service.ts
 import { OpenAIChatProvider, XRequest } from '@ant-design/x-sdk';
 
 export const CHAT_API_URL =

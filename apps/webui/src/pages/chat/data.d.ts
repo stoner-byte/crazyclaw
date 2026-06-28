@@ -1,4 +1,4 @@
-// src/pages/chatbot/data.d.ts
+// src/pages/chat/data.d.ts
 
 export interface ConversationItem {
   key: string;

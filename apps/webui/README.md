@@ -36,7 +36,7 @@ Language: English | [简体中文](./README.zh-CN.md)
 - :globe_with_meridians: **International**: Built-in i18n solution
 - :gear: **Best Practices**: Solid workflow to make your code healthy
 - :1234: **Mock development**: Easy to use mock development solution
-- :robot: **AI Assistant**: Built-in AI chatbot page powered by [Ant Design X](https://x.ant.design/)
+- :robot: **AI Assistant**: Built-in AI chat page powered by [Ant Design X](https://x.ant.design/)
 - :white_check_mark: **UI Test**: Fly safely with unit and e2e tests
 
 ## Templates

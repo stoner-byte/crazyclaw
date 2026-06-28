@@ -1,4 +1,4 @@
-// src/pages/chatbot/style.ts
+// src/pages/chat/style.ts
 import { createStyles } from 'antd-style';
 
 export const useStyles = createStyles(({ css, token }) => ({
@@ -65,9 +65,9 @@ export const useStyles = createStyles(({ css, token }) => ({
   `,
 
   cursor: css`
-    animation: chatbot-blink 0.8s step-end infinite;
+    animation: chat-blink 0.8s step-end infinite;
 
-    @keyframes chatbot-blink {
+    @keyframes chat-blink {
       0%, 100% { opacity: 1; }
       50% { opacity: 0; }
     }

@@ -70,9 +70,9 @@ export default [
   },
   {
     path: '/chat',
-    name: 'chatbot',
+    name: 'chat',
     icon: 'message',
-    component: './chatbot',
+    component: './chat',
   },
   {
     path: '/agents',

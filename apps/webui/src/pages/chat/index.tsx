@@ -113,7 +113,7 @@ const roleConfig: BubbleListProps['role'] = {
   },
 };
 
-const ChatbotPage: React.FC = () => {
+const ChatPage: React.FC = () => {
   const { styles } = useStyles();
   const idCounter = useRef(0);
   const generateId = useCallback(() => `conv-${++idCounter.current}`, []);
@@ -329,4 +329,4 @@ const ChatbotPage: React.FC = () => {
   );
 };
 
-export default ChatbotPage;
+export default ChatPage;

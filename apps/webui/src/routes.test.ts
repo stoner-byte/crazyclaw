@@ -8,7 +8,7 @@ describe('routes', () => {
       .map((route) => route.name);
 
     expect(visibleTopLevelMenus).toEqual([
-      'chatbot',
+      'chat',
       'agents',
       'models',
       'tools',
@@ -20,8 +20,8 @@ describe('routes', () => {
       expect.arrayContaining([
         expect.objectContaining({
           path: '/chat',
-          name: 'chatbot',
-          component: './chatbot',
+          name: 'chat',
+          component: './chat',
         }),
         expect.objectContaining({
           path: '/agents',
