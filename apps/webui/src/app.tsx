@@ -18,7 +18,6 @@ import {
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 
-const isDev = process.env.NODE_ENV === 'development';
 const defaultCurrentUser: API.CurrentUser = {
   name: 'CrazyClaw',
   avatar: '/pro_icon.svg',
@@ -146,7 +145,7 @@ export const layout: RunTimeLayoutConfig = ({
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const request: RequestConfig = {
-  baseURL: isDev ? '' : 'https://pro-api.ant-design-demo.workers.dev',
+  baseURL: process.env.UMI_APP_API_BASE_URL || 'http://localhost:3000',
   ...errorConfig,
 };
 

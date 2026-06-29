@@ -1,6 +1,8 @@
 packages:
   - "apps/*"
   - "packages/*"
+dedupeInjectedDeps: false
+dedupePeerDependents: false
 allowBuilds:
   '@scarf/scarf': true
   core-js: true

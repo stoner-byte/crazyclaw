@@ -6,6 +6,8 @@
   "packageManager": "pnpm@11.5.1",
   "scripts": {
     "dev": "pnpm --parallel --filter server --filter webui dev",
+    "desktop:dev": "pnpm --filter @crazyclaw/desktop dev",
+    "desktop:build": "pnpm --filter @crazyclaw/desktop build:app",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test"

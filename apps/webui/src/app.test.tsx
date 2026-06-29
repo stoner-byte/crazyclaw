@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock all heavy dependencies before importing app
 const mockReplace = vi.fn();
@@ -58,6 +58,10 @@ describe('app getInitialState', () => {
     };
   });
 
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('should return local currentUser without fetching remote user', async () => {
     const { getInitialState } = await import('./app');
 
@@ -107,6 +111,29 @@ describe('app getInitialState', () => {
       avatar: '/pro_icon.svg',
       access: 'admin',
     });
+  });
+});
+
+describe('app request', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('uses the local CrazyClaw API by default', async () => {
+    vi.resetModules();
+
+    const { request } = await import('./app');
+
+    expect(request.baseURL).toBe('http://localhost:3000');
+  });
+
+  it('allows overriding the CrazyClaw API base URL', async () => {
+    vi.resetModules();
+    vi.stubEnv('UMI_APP_API_BASE_URL', 'http://127.0.0.1:3456');
+
+    const { request } = await import('./app');
+
+    expect(request.baseURL).toBe('http://127.0.0.1:3456');
   });
 });
 

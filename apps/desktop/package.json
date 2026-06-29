@@ -1,0 +1,16 @@
+{
+  "name": "@crazyclaw/desktop",
+  "version": "0.0.1-beta.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm prepare-sidecar && tauri dev",
+    "build:app": "tauri build",
+    "prepare-sidecar": "node scripts/prepare-sidecar.mjs",
+    "tauri": "tauri",
+    "test": "node --test scripts/*.test.mjs"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.3"
+  }
+}

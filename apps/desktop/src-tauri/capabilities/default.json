@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "CrazyClaw desktop shell permissions",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

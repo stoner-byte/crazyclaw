@@ -35,6 +35,15 @@ pnpm --filter @carzyclaw/webui typecheck
 pnpm --filter @crazyclaw/core typecheck
 ```
 
+桌面壳：
+
+```bash
+pnpm desktop:dev
+pnpm desktop:build
+```
+
+`apps/desktop` 是 Tauri v2 壳，只负责窗口和启动/关闭本地 server sidecar。业务逻辑仍在 `apps/webui`、`apps/server` 和 `packages/core` 中。
+
 ## 配置
 
 前端后端地址在 `apps/webui/.env` 中配置：
