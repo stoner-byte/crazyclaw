@@ -1,9 +1,11 @@
 import { createBrowserRouter } from 'react-router'
-import { HomePage } from './pages/home'
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <HomePage />,
+    lazy: async () => {
+      const { HomePage } = await import('./pages/home')
+      return { Component: HomePage }
+    },
   },
 ])
