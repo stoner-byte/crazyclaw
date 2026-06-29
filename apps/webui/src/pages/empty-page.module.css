@@ -1,0 +1,14 @@
+.page {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.page h1 {
+  margin: 0;
+  color: #24272e;
+  font-size: 28px;
+  font-weight: 650;
+  line-height: 1.2;
+}

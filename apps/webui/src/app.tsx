@@ -9,8 +9,6 @@ function App() {
         token: {
           borderRadius: 8,
           colorPrimary: '#1677ff',
-          fontFamily:
-            '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         },
       }}
     >
