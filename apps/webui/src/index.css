@@ -79,3 +79,18 @@ body {
 #root {
   min-height: 100vh;
 }
+
+.cc-page {
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 32px;
+  background:
+    radial-gradient(circle at 88% 8%, var(--cc-page-accent-glow), transparent 34%),
+    var(--cc-content-bg);
+}
+
+@media (max-width: 720px) {
+  .cc-page {
+    padding: 20px;
+  }
+}

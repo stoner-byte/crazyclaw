@@ -1,0 +1,79 @@
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.title {
+  margin: 0 !important;
+  letter-spacing: 0;
+}
+
+.emptyState {
+  display: grid;
+  min-height: 360px;
+  place-items: center;
+}
+
+.toolGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.toolCard {
+  height: 100%;
+  border-color: var(--ant-color-border-secondary);
+  background: var(--cc-panel-bg);
+}
+
+.toolIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--cc-soft-accent-bg);
+  color: var(--ant-color-primary);
+}
+
+.cardBody {
+  width: 100%;
+}
+
+.description {
+  min-height: 44px;
+  margin-bottom: 0 !important;
+  color: var(--ant-color-text-secondary);
+}
+
+@media (max-width: 1400px) {
+  .toolGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .toolGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+  }
+
+  .toolGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  .toolGrid {
+    grid-template-columns: 1fr;
+  }
+}

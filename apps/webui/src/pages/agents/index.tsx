@@ -198,7 +198,7 @@ export function AgentsPage() {
   }
 
   return (
-    <section className={styles.page}>
+    <section className="cc-page">
       <header className={styles.header}>
         <div>
           <Typography.Title className={styles.title} level={2}>

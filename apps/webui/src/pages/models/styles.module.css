@@ -7,7 +7,7 @@
 }
 
 .title {
-  margin: 0 0 6px !important;
+  margin: 0 !important;
   letter-spacing: 0;
 }
 
@@ -17,13 +17,17 @@
   place-items: center;
 }
 
-.agentCard {
-  height: 100%;
+.modelCol {
+  display: flex;
+}
+
+.modelCard {
+  width: 100%;
   border-color: var(--ant-color-border-secondary);
   background: var(--cc-panel-bg);
 }
 
-.agentIcon {
+.modelIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -38,52 +42,16 @@
   width: 100%;
 }
 
-.description {
-  min-height: 44px;
-  margin-bottom: 0 !important;
-  color: var(--ant-color-text-secondary);
-}
-
-.sectionBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.workspaceLine {
-  width: 100%;
-}
-
-.workspaceText {
-  flex: 1;
+.copyText {
   margin-bottom: 0 !important;
 }
 
-.moreWorkspaces {
-  align-self: flex-start;
-  width: fit-content;
-}
-
-.workspaceTooltip {
-  max-width: 360px;
-  word-break: break-all;
-}
-
-.toolList {
+.inputList {
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 8px;
-}
-
-.toolTag {
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.modalStack {
-  width: 100%;
+  margin-top: 8px;
 }
 
 .modalSection {
@@ -93,23 +61,11 @@
   background: var(--cc-panel-bg);
 }
 
-.formRow {
-  margin-top: 12px;
+.modalTitle {
+  margin-bottom: 12px;
 }
 
 .lastFormItem {
-  margin-bottom: 0;
-}
-
-.workspaceEditLine {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  width: 100%;
-}
-
-.workspaceEditInput {
-  flex: 1;
   margin-bottom: 0;
 }
 
