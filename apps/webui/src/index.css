@@ -13,14 +13,20 @@ body {
 .ant-app {
   --cc-app-bg: #f6f8fa;
   --cc-content-bg: #ffffff;
+  --cc-content-shadow: -2px -2px 8px rgb(31 35 40 / 3%);
   --cc-sidebar-bg: #f6f8fa;
-  --cc-sidebar-border: #d0d7de;
   --cc-menu-color: var(--ant-color-text-secondary);
   --cc-menu-color-hover: var(--ant-color-text);
   --cc-menu-color-active: var(--ant-color-text);
   --cc-menu-bg-hover: var(--ant-color-fill-secondary);
   --cc-menu-bg-active: #ffffff;
   --cc-menu-shadow-active: none;
+  --cc-tab-color: var(--ant-color-text-secondary);
+  --cc-tab-color-hover: var(--ant-color-text);
+  --cc-tab-color-active: var(--ant-color-text);
+  --cc-tab-bg-hover: var(--ant-color-fill-secondary);
+  --cc-tab-bg-active: #ffffff;
+  --cc-tab-close-bg-hover: var(--ant-color-fill-secondary);
   --cc-scrollbar-thumb: var(--ant-color-border);
   --cc-scrollbar-thumb-hover: #afb8c1;
 }
@@ -28,9 +34,10 @@ body {
 [data-theme='dark'] .ant-app {
   --cc-app-bg: #010409;
   --cc-content-bg: #0d1117;
+  --cc-content-shadow: -2px -2px 8px rgb(0 0 0 / 10%);
   --cc-sidebar-bg: #010409;
-  --cc-sidebar-border: #30363d;
   --cc-menu-bg-active: #21262d;
+  --cc-tab-bg-active: #21262d;
   --cc-scrollbar-thumb-hover: #484f58;
 }
 

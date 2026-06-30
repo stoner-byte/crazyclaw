@@ -1,4 +1,4 @@
-import styles from './empty-page.module.css'
+import styles from './styles.module.css'
 
 type EmptyPageProps = {
   title: string
