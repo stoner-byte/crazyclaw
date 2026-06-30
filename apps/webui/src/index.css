@@ -10,6 +10,24 @@ body {
   --cc-scrollbar-thumb-hover: rgb(31 35 41 / 46%);
 }
 
+.ant-app {
+  --cc-app-bg: var(--ant-color-bg-layout);
+  --cc-content-bg: var(--ant-color-bg-container);
+  --cc-sidebar-bg: var(--ant-color-fill-tertiary);
+  --cc-sidebar-border: var(--ant-color-border-secondary);
+  --cc-menu-color: var(--ant-color-text-secondary);
+  --cc-menu-color-hover: var(--ant-color-text);
+  --cc-menu-color-active: var(--ant-color-text);
+  --cc-menu-bg-hover: var(--ant-color-fill-secondary);
+  --cc-menu-bg-active: var(--ant-color-bg-container);
+  --cc-menu-shadow-active: var(
+    --ant-box-shadow-tertiary,
+    0 1px 2px rgb(0 0 0 / 8%)
+  );
+  --cc-scrollbar-thumb: var(--ant-color-fill);
+  --cc-scrollbar-thumb-hover: var(--ant-color-fill-secondary);
+}
+
 * {
   scrollbar-color: var(--cc-scrollbar-thumb) transparent;
   scrollbar-width: thin;

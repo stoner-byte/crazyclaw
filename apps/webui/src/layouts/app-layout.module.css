@@ -2,8 +2,8 @@
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr);
   min-height: 100vh;
-  background: #f7f8fa;
-  color: #1f2329;
+  background: var(--cc-app-bg);
+  color: var(--ant-color-text);
 }
 
 .sidebar {
@@ -14,8 +14,8 @@
   width: 64px;
   height: 100vh;
   overflow: hidden;
-  border-right: 1px solid #e8e9ec;
-  background: #f1f2f4;
+  border-right: 1px solid var(--cc-sidebar-border);
+  background: var(--cc-sidebar-bg);
 }
 
 .logoArea,
@@ -63,7 +63,7 @@
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: #4c5159;
+  color: var(--cc-menu-color);
   cursor: pointer;
   transition:
     background-color 160ms ease,
@@ -71,18 +71,18 @@
 }
 
 .menuButton:hover {
-  background: #e6e8ec;
-  color: #15181d;
+  background: var(--cc-menu-bg-hover);
+  color: var(--cc-menu-color-hover);
 }
 
 .menuButtonActive {
-  background: #ffffff;
-  color: #15181d;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+  background: var(--cc-menu-bg-active);
+  color: var(--cc-menu-color-active);
+  box-shadow: var(--cc-menu-shadow-active);
 }
 
 .content {
   min-width: 0;
   min-height: 100vh;
-  background: #ffffff;
+  background: var(--cc-content-bg);
 }

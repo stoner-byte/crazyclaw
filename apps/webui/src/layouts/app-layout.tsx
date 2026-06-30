@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 import { Bot, Boxes, MessageCircle, Moon, Wrench } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router'
+import { useThemeMode } from '../theme'
 import styles from './app-layout.module.css'
 
 const mainMenuItems = [
@@ -10,9 +11,12 @@ const mainMenuItems = [
   { path: '/tools', label: 'Tools', icon: Wrench },
 ]
 
-const secondaryMenuItems = [{ label: 'Toggle theme', icon: Moon }]
-
 export function AppLayout() {
+  const { toggleTheme } = useThemeMode()
+  const secondaryMenuItems = [
+    { label: 'Toggle theme', icon: Moon, onClick: toggleTheme },
+  ]
+
   return (
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
@@ -37,11 +41,12 @@ export function AppLayout() {
         </nav>
 
         <div className={styles.secondaryMenu}>
-          {secondaryMenuItems.map(({ label, icon: Icon }) => (
+          {secondaryMenuItems.map(({ label, icon: Icon, onClick }) => (
             <button
               aria-label={label}
               className={styles.menuButton}
               key={label}
+              onClick={onClick}
               title={label}
               type="button"
             >
