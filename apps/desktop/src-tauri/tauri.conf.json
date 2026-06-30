@@ -5,9 +5,9 @@
   "identifier": "com.crazyclaw.desktop",
   "build": {
     "frontendDist": "../../webui/dist",
-    "devUrl": "http://localhost:8000",
-    "beforeDevCommand": "pnpm --filter @carzyclaw/webui dev",
-    "beforeBuildCommand": "pnpm --filter @carzyclaw/webui build && pnpm --filter @crazyclaw/desktop prepare-sidecar"
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "pnpm --filter @crazyclaw/webui dev",
+    "beforeBuildCommand": "pnpm --filter @crazyclaw/webui build && pnpm --filter @crazyclaw/desktop prepare-sidecar"
   },
   "app": {
     "windows": [
