@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router'
 import { router } from './routes'
 import {
   ThemeModeContext,
+  appThemes,
   type ThemeMode,
   themeStorageKey,
 } from './theme'
@@ -31,15 +32,14 @@ function App() {
             themeMode === 'dark'
               ? theme.darkAlgorithm
               : theme.defaultAlgorithm,
-          token: {
-            borderRadius: 8,
-            colorPrimary: '#1677ff',
-          },
+          ...appThemes[themeMode],
         }}
       >
-        <AntApp>
-          <RouterProvider router={router} />
-        </AntApp>
+        <div data-theme={themeMode}>
+          <AntApp>
+            <RouterProvider router={router} />
+          </AntApp>
+        </div>
       </XProvider>
     </ThemeModeContext.Provider>
   )

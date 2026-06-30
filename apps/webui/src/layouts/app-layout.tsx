@@ -1,20 +1,26 @@
 import clsx from 'clsx'
-import { Bot, Boxes, MessageCircle, Moon, Wrench } from 'lucide-react'
+import { Bot, BrainCircuit, MessageCircle, Moon, Sun, Wrench } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router'
 import { useThemeMode } from '../theme'
 import styles from './app-layout.module.css'
 
+const menuIconStrokeWidth = 1.8
+
 const mainMenuItems = [
   { path: '/chat', label: 'Chat', icon: MessageCircle },
   { path: '/agents', label: 'Agents', icon: Bot },
-  { path: '/models', label: 'Models', icon: Boxes },
+  { path: '/models', label: 'Models', icon: BrainCircuit },
   { path: '/tools', label: 'Tools', icon: Wrench },
 ]
 
 export function AppLayout() {
-  const { toggleTheme } = useThemeMode()
+  const { themeMode, toggleTheme } = useThemeMode()
   const secondaryMenuItems = [
-    { label: 'Toggle theme', icon: Moon, onClick: toggleTheme },
+    {
+      label: 'Toggle theme',
+      icon: themeMode === 'dark' ? Sun : Moon,
+      onClick: toggleTheme,
+    },
   ]
 
   return (
@@ -35,7 +41,7 @@ export function AppLayout() {
               title={label}
               to={path}
             >
-              <Icon aria-hidden="true" size={22} strokeWidth={2.2} />
+              <Icon aria-hidden="true" size={22} strokeWidth={menuIconStrokeWidth} />
             </NavLink>
           ))}
         </nav>
@@ -50,7 +56,7 @@ export function AppLayout() {
               title={label}
               type="button"
             >
-              <Icon aria-hidden="true" size={22} strokeWidth={2.2} />
+              <Icon aria-hidden="true" size={22} strokeWidth={menuIconStrokeWidth} />
             </button>
           ))}
         </div>
