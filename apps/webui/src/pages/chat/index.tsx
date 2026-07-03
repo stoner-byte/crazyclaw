@@ -29,6 +29,8 @@ import {
 import styles from './styles.module.css'
 
 const REQUEST_PLACEHOLDER: ChatMessage = { role: 'assistant', content: '' }
+const CHAT_AGENT_STORAGE_KEY = 'crazyclaw-chat-agent'
+const CHAT_MODEL_STORAGE_KEY = 'crazyclaw-chat-model'
 const SenderSwitch = Sender.Switch
 
 type DropdownSwitchProps = Omit<HTMLAttributes<HTMLDivElement>, 'children'> & {
@@ -60,32 +62,75 @@ function getMessageContent(message?: ChatMessage) {
   return typeof content === 'string' ? content : content.text
 }
 
+function readStoredSelection(storageKey: string) {
+  return localStorage.getItem(storageKey)?.trim() ?? ''
+}
+
+function storeSelection(storageKey: string, value: string) {
+  localStorage.setItem(storageKey, value)
+}
+
+function resolveSelection<T extends { id: string }>(
+  options: T[],
+  current: string,
+  storageKey: string,
+) {
+  if (options.some((option) => option.id === current)) return current
+
+  const stored = readStoredSelection(storageKey)
+  if (options.some((option) => option.id === stored)) return stored
+
+  if (stored) localStorage.removeItem(storageKey)
+  return ''
+}
+
 function splitThink(content: string) {
   const open = content.indexOf('<think>')
-  if (open < 0) return { answer: content, thinking: '' }
+  if (open < 0) return { answer: content, thinking: '', thinkingFinished: false }
 
   const close = content.indexOf('</think>', open)
   if (close < 0) {
-    return { answer: '', thinking: content.slice(open + '<think>'.length) }
+    return {
+      answer: '',
+      thinking: content.slice(open + '<think>'.length),
+      thinkingFinished: false,
+    }
   }
 
   return {
     answer: `${content.slice(0, open)}${content.slice(close + '</think>'.length)}`,
     thinking: content.slice(open + '<think>'.length, close),
+    thinkingFinished: true,
   }
 }
 
-function renderAssistantContent(message: ChatMessage, loading: boolean) {
-  const { answer, thinking } = splitThink(getMessageContent(message))
+function AssistantMessageContent({
+  loading,
+  message,
+}: {
+  loading: boolean
+  message: ChatMessage
+}) {
+  const { answer, thinking, thinkingFinished } = splitThink(getMessageContent(message))
+  const [thinkExpanded, setThinkExpanded] = useState(
+    () => Boolean(thinking) && !thinkingFinished,
+  )
+
+  useEffect(() => {
+    if (!thinking) return
+    setThinkExpanded(!thinkingFinished)
+  }, [thinking, thinkingFinished])
 
   return (
     <Space className={styles.assistantContent} orientation="vertical" size={10}>
       {thinking && (
         <Think
+          blink={loading && !thinkingFinished}
           className={styles.think}
-          defaultExpanded={false}
-          loading={loading}
+          expanded={thinkExpanded}
+          loading={loading && !thinkingFinished}
           title="思考"
+          onExpand={setThinkExpanded}
         >
           <div className={styles.messageText}>{thinking}</div>
         </Think>
@@ -136,11 +181,12 @@ export function ChatPage() {
   const role = useMemo<BubbleListProps['role']>(
     () => ({
       assistant: {
-        contentRender: (content: ChatMessage, info) =>
-          renderAssistantContent(
-            content,
-            info.status === 'loading' || info.status === 'updating',
-          ),
+        contentRender: (content: ChatMessage, info) => (
+          <AssistantMessageContent
+            loading={info.status === 'loading' || info.status === 'updating'}
+            message={content}
+          />
+        ),
         placement: 'start',
       },
       user: {
@@ -186,9 +232,7 @@ export function ChatPage() {
       const enabledAgents = (agentsResponse.data ?? []).filter((agent) => agent.enabled)
       setAgents(enabledAgents)
       setSelectedAgent((current) =>
-        enabledAgents.some((agent) => agent.id === current)
-          ? current
-          : enabledAgents[0]?.id ?? '',
+        resolveSelection(enabledAgents, current, CHAT_AGENT_STORAGE_KEY),
       )
     }
 
@@ -199,9 +243,7 @@ export function ChatPage() {
       const enabledModels = (modelsResponse.data ?? []).filter((model) => model.enabled)
       setModels(enabledModels)
       setSelectedModel((current) =>
-        enabledModels.some((model) => model.id === current)
-          ? current
-          : enabledModels[0]?.id ?? '',
+        resolveSelection(enabledModels, current, CHAT_MODEL_STORAGE_KEY),
       )
     }
   }, [message])
@@ -250,6 +292,16 @@ export function ChatPage() {
     })
   }
 
+  const selectAgent = (agent: string) => {
+    setSelectedAgent(agent)
+    storeSelection(CHAT_AGENT_STORAGE_KEY, agent)
+  }
+
+  const selectModel = (model: string) => {
+    setSelectedModel(model)
+    storeSelection(CHAT_MODEL_STORAGE_KEY, model)
+  }
+
   const disabled = loadingOptions || !selectedAgent || !selectedModel
 
   return (
@@ -283,7 +335,7 @@ export function ChatPage() {
                     menu={{
                       items: agentOptions,
                       selectedKeys: selectedAgent ? [selectedAgent] : [],
-                      onClick: ({ key }) => setSelectedAgent(key),
+                      onClick: ({ key }) => selectAgent(key),
                     } satisfies MenuProps}
                   >
                     <DropdownSwitch icon={<Bot size={14} />}>
@@ -295,7 +347,7 @@ export function ChatPage() {
                     menu={{
                       items: modelOptions,
                       selectedKeys: selectedModel ? [selectedModel] : [],
-                      onClick: ({ key }) => setSelectedModel(key),
+                      onClick: ({ key }) => selectModel(key),
                     } satisfies MenuProps}
                   >
                     <DropdownSwitch icon={<BrainCircuit size={14} />}>
