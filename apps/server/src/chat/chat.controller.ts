@@ -16,7 +16,9 @@ import { ChatService } from './chat.service';
 import type { ChatStreamQuery } from './chat.types';
 
 type ChatTestPayload = {
+  agent: string;
   messages?: Array<{ role?: string; content?: string }>;
+  model: string;
 };
 
 @Controller('api/chat')
@@ -31,15 +33,27 @@ export class ChatController {
   }
 
   @Get()
-  async testByQuery(@Query() query: { input?: string }, @Res() res: Response) {
-    return this.test({ messages: [{ role: 'user', content: query.input }] }, res);
+  async testByQuery(
+    @Query() query: { agent?: string; input?: string; model?: string },
+    @Res() res: Response,
+  ) {
+    return this.test(
+      {
+        agent: query.agent ?? '',
+        messages: [{ role: 'user', content: query.input }],
+        model: query.model ?? '',
+      },
+      res,
+    );
   }
 
   @Post()
   async test(@Body() body: ChatTestPayload, @Res() res: Response) {
     const input = getLastUserContent(body);
-    if (!input) {
-      this.logger.warn('[api-chat] request ignored because input is empty');
+    const agentName = getRequiredString(body.agent);
+    const modelName = getRequiredString(body.model);
+    if (!input || !agentName || !modelName) {
+      this.logger.warn('[api-chat] request ignored because required fields are missing');
       res.status(400).end();
       return;
     }
@@ -51,7 +65,7 @@ export class ChatController {
     res.flushHeaders();
 
     try {
-      const agent = await createAgent('coder', 'qwen');
+      const agent = await createAgent(agentName, modelName);
       const response = await agent.stream(input);
       let thinking = false;
 
@@ -98,6 +112,10 @@ function getLastUserContent(body: ChatTestPayload): string {
     .reverse()
     .find((item) => item.role === 'user' && typeof item.content === 'string');
   return message?.content?.trim() ?? '';
+}
+
+function getRequiredString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 function writeOpenAIChunk(res: Response, content: string, role?: string) {

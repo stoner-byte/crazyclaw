@@ -1,0 +1,126 @@
+.page {
+  --chat-agent-bubble-bg: var(--ant-color-fill-tertiary);
+  --chat-user-bubble-bg: var(--ant-color-primary);
+  --chat-user-bubble-color: #fff;
+
+  box-sizing: border-box;
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  background: var(--cc-content-bg);
+}
+
+.chatFrame {
+  display: flex;
+  width: 50%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.messages {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 28px 32px 16px;
+}
+
+.bubbleList {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  padding: 8px 0 20px;
+}
+
+.bubbleList :global(.ant-bubble-list-scroll-box) {
+  scrollbar-color: var(--cc-scrollbar-thumb) transparent;
+  scrollbar-width: thin;
+}
+
+.bubbleList :global(.ant-bubble-list-scroll-box::-webkit-scrollbar) {
+  width: var(--cc-scrollbar-size);
+  height: var(--cc-scrollbar-size);
+}
+
+.bubbleList :global(.ant-bubble-list-scroll-box::-webkit-scrollbar-track) {
+  background: transparent;
+}
+
+.bubbleList :global(.ant-bubble-list-scroll-box::-webkit-scrollbar-thumb) {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-color: var(--cc-scrollbar-thumb);
+  background-clip: content-box;
+}
+
+.bubbleList :global(.ant-bubble-list-scroll-box::-webkit-scrollbar-thumb:hover) {
+  background-color: var(--cc-scrollbar-thumb-hover);
+}
+
+.messageText {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.assistantContent {
+  width: 100%;
+}
+
+.think {
+  max-width: 100%;
+}
+
+.markdown {
+  min-width: 0;
+}
+
+.markdown :global(p) {
+  margin: 0 0 8px;
+}
+
+.markdown :global(p:last-child) {
+  margin-bottom: 0;
+}
+
+.centerState {
+  display: grid;
+  min-height: 360px;
+  flex: 1;
+  place-items: center;
+}
+
+.composerWrap {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  padding: 16px 24px 28px;
+}
+
+.composer {
+  width: min(100%, 980px);
+  box-shadow: 0 18px 48px rgb(31 35 40 / 10%);
+}
+
+.switchTrigger {
+  display: inline-flex;
+}
+
+@media (max-width: 720px) {
+  .chatFrame {
+    width: 100%;
+  }
+
+  .messages {
+    padding: 20px 18px 12px;
+  }
+
+  .composerWrap {
+    padding: 12px 14px 18px;
+  }
+}

@@ -30,8 +30,8 @@ body {
   --cc-tab-bg-hover: var(--ant-color-fill-secondary);
   --cc-tab-bg-active: #ffffff;
   --cc-tab-close-bg-hover: var(--ant-color-fill-secondary);
-  --cc-scrollbar-thumb: var(--ant-color-border);
-  --cc-scrollbar-thumb-hover: #afb8c1;
+  --cc-scrollbar-thumb: #d0d7de;
+  --cc-scrollbar-thumb-hover: #8c959f;
 }
 
 [data-theme='dark'] .ant-app {
@@ -44,6 +44,7 @@ body {
   --cc-sidebar-bg: #010409;
   --cc-menu-bg-active: #21262d;
   --cc-tab-bg-active: #21262d;
+  --cc-scrollbar-thumb: #30363d;
   --cc-scrollbar-thumb-hover: #484f58;
 }
 

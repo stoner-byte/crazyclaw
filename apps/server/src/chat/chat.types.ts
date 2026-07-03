@@ -1,5 +1,5 @@
 export type ChatStreamQuery = {
-  agentName?: string;
-  modelName?: string;
+  agent?: string;
+  model?: string;
   message?: string;
 };

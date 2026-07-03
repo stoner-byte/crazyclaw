@@ -1,6 +1,8 @@
 import { readConfig } from './readConfig.js';
 import { initStreamModel } from './agents.js';
 
+export * from 'langchain';
+
 export async function createAgent(
   agentName: string,
   modelName: string,
